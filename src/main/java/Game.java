@@ -8,7 +8,7 @@ public class Game extends JFrame
 	Game ()
 	{
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setSize(800,800);
+		setSize(400,800);
 		setLocationRelativeTo(null);
 		setTitle("Battleship by Mickey");
 		setLayout(new BoxLayout(this.getContentPane(), BoxLayout.Y_AXIS));

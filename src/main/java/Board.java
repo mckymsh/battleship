@@ -2,6 +2,7 @@ package battleship3;
 
 import java.awt.*;
 import javax.swing.*;
+import javax.swing.border.*; // Why, Java
 
 public class Board extends JPanel
 {
@@ -12,14 +13,15 @@ public class Board extends JPanel
 		
 	Board(String name)
 	{
+		Border border = BorderFactory.createLineBorder(Color.black);
 		this.name = name;
 		
 		cells = new Cell[Battleship.BOARD_DIMENSION * Battleship.BOARD_DIMENSION];
 		ships = new Ship[Battleship.SHIP_NAMES.length];
 		
 		JPanel cellPanel = new JPanel();
+		cellPanel.setBorder(border);
 		cellPanel.setLayout(new GridLayout(Battleship.BOARD_DIMENSION, Battleship.BOARD_DIMENSION));
-		// Places blank cells to avoid null pointers throughout the program.
 		for(int i = 0; i < cells.length; i++)
 		{
 			cells[i] = new Cell();
@@ -28,6 +30,10 @@ public class Board extends JPanel
 
 		JPanel statusPanel = new JPanel();
 		statusPanel.setLayout(new BoxLayout(statusPanel, BoxLayout.Y_AXIS));
+
+		// Remember that ship type 0 is no ship,
+		// so it doesn't need to be on the panel.
+		ships[0] = new Ship(0);
 		for (int i = 1; i < ships.length; i++)
 		{
 			ships[i] = new Ship(i);
