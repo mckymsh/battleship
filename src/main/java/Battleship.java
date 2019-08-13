@@ -30,6 +30,13 @@ public class Battleship
 	protected static final Color HIT_COLOR				= Color.ORANGE;
 	protected static final String SUNK_SYMBOL			= "#";
 	protected static final Color SUNK_COLOR				= Color.BLACK;
+
+	// Ship placement orientations for code readability
+	protected static final int NONE 	= 0;
+	protected static final int NORTH 	= 1;
+	protected static final int EAST 	= 2;
+	protected static final int SOUTH 	= 3;
+	protected static final int WEST 	= 4;
 	
 	public static void main(String[] args)
 	{

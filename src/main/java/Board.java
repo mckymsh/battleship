@@ -15,7 +15,7 @@ public class Board extends JPanel
 	protected Ship[] ships;
 
 	private boolean shipPlacementInProgress;
-	private int firstShipCoordinate;
+	private int startCoordinate;
 	private int currentShipType;
 		
 	Board(boolean isPlayerBoard, String name, Game game)
@@ -59,6 +59,7 @@ public class Board extends JPanel
 			activate();	
 		} 
 		
+		currentShipType = 1;
 		// Remember that ship type 0 is no ship
 		ships[0] = new Ship(0);
 		for (int i = 1; i < ships.length; i++)
@@ -78,68 +79,154 @@ public class Board extends JPanel
 		}
 	}
 
-	protected boolean placeShip(int coordinate)
+	protected boolean placeShip(int selectedCoordinate)
 	{
+		// If this is our first click for this ship.
 		if(!shipPlacementInProgress)
 		{
-			if(cells[coordinate].hasShip)
+			if(cells[selectedCoordinate].hasShip)
 			{
 				Log.debug("Cell Already Has Ship");
 				return false;
 			}
-			cells[coordinate].addShip(currentShipType);
+			cells[selectedCoordinate].addShip(currentShipType);
 			shipPlacementInProgress = true;
-			firstShipCoordinate = coordinate;
+			startCoordinate = selectedCoordinate;
 			return true;
 		}
-		if(coordinate == firstShipCoordinate)
+
+		// If the square is clicked again before the second selectedCoordinate,
+		// it cancels the placement.
+		if(selectedCoordinate == startCoordinate)
 		{
-			cells[coordinate].removeShip();
+			cells[selectedCoordinate].removeShip();
 			shipPlacementInProgress = false;
 			return false;
 		}
-		boolean horizontal = ((coordinate / Battleship.BOARD_DIMENSION) 
-							== (firstShipCoordinate / Battleship.BOARD_DIMENSION)) ? true : false;
 
 
-		// if horizontal
-		if (horizontal)
+
+		int shipOrientation = Battleship.NONE;
+		if((selectedCoordinate / Battleship.BOARD_DIMENSION) == (startCoordinate / Battleship.BOARD_DIMENSION))
 		{
-			// Is it too long for the space?
-			if(((firstShipCoordinate % 10) + Battleship.SHIP_LENGTHS[currentShipType]) > Battleship.BOARD_DIMENSION)
+			if((selectedCoordinate > startCoordinate))
 			{
-				return false;
+				shipOrientation = Battleship.EAST;
 			}
-			// Are there any ships in the way?
-			for(int i = 1; i < Battleship.SHIP_LENGTHS[currentShipType]; i++)
+			else
 			{
-				if(cells[firstShipCoordinate + i].hasShip)
-				{
-					return false;
-				}
+				shipOrientation = Battleship.WEST;
 			}
-			// Add ship to the relevant cells.
-			addShip(currentShipType, firstShipCoordinate, horizontal);
+		}
+		else if((selectedCoordinate % Battleship.BOARD_DIMENSION) == (startCoordinate % Battleship.BOARD_DIMENSION))
+		{
+			if((selectedCoordinate > startCoordinate))
+			{
+				shipOrientation = Battleship.SOUTH;
+			}
+			else
+			{
+				shipOrientation = Battleship.NORTH;
+			}
 		}
 		else
 		{
-			// Is it too long for the (now, vertical) space?
-			if(((firstShipCoordinate / 10) + Battleship.SHIP_LENGTHS[currentShipType]) > Battleship.BOARD_DIMENSION)
+			Log.debug("Cells Not Aligned");
+			return false;
+		}
+
+		if(shipOrientation == Battleship.NORTH)
+		{
+			// Check North
+			if(((startCoordinate / 10) - (Battleship.SHIP_LENGTHS[currentShipType]-1)) < 0)
 			{
 				return false;
 			}
 			// Are there any ships in the way?
 			for(int i = 1; i < Battleship.SHIP_LENGTHS[currentShipType]; i++)
 			{
-				if(cells[firstShipCoordinate + (i * Battleship.BOARD_DIMENSION)].hasShip)
+				if(cells[startCoordinate - (i * Battleship.BOARD_DIMENSION)].hasShip)
 				{
 					return false;
 				}
 			}
-			addShip(currentShipType, firstShipCoordinate, horizontal);
+			for(int i = 0; i < Battleship.SHIP_LENGTHS[currentShipType]; i++)
+			{
+				cells[startCoordinate - (i*10)].addShip(currentShipType);
+			}
 		}
+		else if (shipOrientation == Battleship.EAST)
+		{
+			// Is it too long for the space?
+			if(((startCoordinate % 10) + Battleship.SHIP_LENGTHS[currentShipType]) > Battleship.BOARD_DIMENSION)
+			{
+				return false;
+			}
+			// Are there any ships in the way?
+			for(int i = 1; i < Battleship.SHIP_LENGTHS[currentShipType]; i++)
+			{
+				if(cells[startCoordinate + i].hasShip)
+				{
+					return false;
+				}
+			}
+
+			for(int i = 0; i < Battleship.SHIP_LENGTHS[currentShipType]; i++)
+			{
+				cells[startCoordinate + i].addShip(currentShipType);
+			}
+		}
+		else if(shipOrientation == Battleship.SOUTH)
+		{
+			// Is it too long for the (now, vertical) space?
+			if(((startCoordinate / 10) + Battleship.SHIP_LENGTHS[currentShipType]) > Battleship.BOARD_DIMENSION)
+			{
+				return false;
+			}
+			// Are there any ships in the way?
+			for(int i = 1; i < Battleship.SHIP_LENGTHS[currentShipType]; i++)
+			{
+				if(cells[startCoordinate + (i * Battleship.BOARD_DIMENSION)].hasShip)
+				{
+					return false;
+				}
+			}
+			for(int i = 0; i < Battleship.SHIP_LENGTHS[currentShipType]; i++)
+			{
+				cells[startCoordinate + (i*10)].addShip(currentShipType);
+			}
+		}
+		else if(shipOrientation == Battleship.WEST)
+		{
+			// Is it too long for the space?
+			if(((startCoordinate % 10) - (Battleship.SHIP_LENGTHS[currentShipType]-1)) < 0)
+			{
+				return false;
+			}
+			// Are there any ships in the way?
+			for(int i = 1; i < Battleship.SHIP_LENGTHS[currentShipType]; i++)
+			{
+				if(cells[startCoordinate - i].hasShip)
+				{
+					return false;
+				}
+			}
+
+			for(int i = 0; i < Battleship.SHIP_LENGTHS[currentShipType]; i++)
+			{
+				cells[startCoordinate - i].addShip(currentShipType);
+			}
+		}
+		else
+		{
+			// If this happens, something has gone horribly wrong.
+			Log.debug("Ship Has No Orientation");
+			return false;
+		}
+
 		// If we made it here, all is well.
 		shipPlacementInProgress = false;
+		Log.debug("Current shipType before increment = " + currentShipType);
 		currentShipType++;
 		if (!(currentShipType < ships.length))
 		{
@@ -149,22 +236,22 @@ public class Board extends JPanel
 	}
 	
 	// This method places the designated ship at the designated coordinates.
-	protected void addShip(int shipType, int coordinate, boolean horizontal)
+	protected void addShip(int currentShipType, int coordinate, boolean horizontal)
 	{
 		if(horizontal)
 		{
 			// Add ship to the relevant cells.
-			for(int i = 0; i < Battleship.SHIP_LENGTHS[shipType]; i++)
+			for(int i = 0; i < Battleship.SHIP_LENGTHS[currentShipType]; i++)
 			{
-				cells[coordinate + i].addShip(shipType);
+				cells[coordinate + i].addShip(currentShipType);
 			}
 		}
 		else
 		{
 			// Add ship to the relevant cells.
-			for(int i = 0; i < Battleship.SHIP_LENGTHS[shipType]; i++)
+			for(int i = 0; i < Battleship.SHIP_LENGTHS[currentShipType]; i++)
 			{
-				cells[coordinate + (i*10)].addShip(shipType);
+				cells[coordinate + (i*10)].addShip(currentShipType);
 			}
 		}
 		// If we made it here, all is well.
