@@ -29,14 +29,7 @@ public class Battleship
 	protected static final String HIT_SYMBOL			= "X";
 	protected static final Color HIT_COLOR				= Color.ORANGE;
 	protected static final String SUNK_SYMBOL			= "#";
-	protected static final Color SUNK_COLOR				= Color.DARK_GRAY;
-	
-	protected static final int NONE = 0;
-	protected static final int SETUP = 1;
-	protected static final int PLAYER_TURN = 2;
-	protected static final int COMPUTER_TURN = 3;
-	protected static final int GAME_OVER = 4;
-
+	protected static final Color SUNK_COLOR				= Color.BLACK;
 	
 	public static void main(String[] args)
 	{

@@ -7,8 +7,6 @@ import javax.swing.border.*; // Why, Java
 
 public class Game extends JFrame
 {
-	public int state;
-
 	JLabel displayPanel;
 	Board playerBoard;
 	Board computerBoard;
@@ -28,17 +26,19 @@ public class Game extends JFrame
 		pack();
 		setLocationRelativeTo(null);
 		setVisible(true);
+
+		run();
 	}
 	
 	protected void run()
 	{
 		// Game happens here
+		newGame();
 	}
 
-	private void setup()
+	private void newGame()
 	{
-		state = Battleship.SETUP;
-		Log.debug("Setup!");
+		Log.debug("Setup");
 		resetBoards();
 		displayPanel.setText("Place Your Ships");
 	}
@@ -47,6 +47,17 @@ public class Game extends JFrame
 	{
 		computerBoard.reset();
 		playerBoard.reset();
+	}
+
+	protected void setupComplete()
+	{
+		Log.debug("All Ships Placed");
+		beginTurn();
+	}
+
+	private void beginTurn()
+	{
+		displayPanel.setText("Select Coordinates");
 	}
 
 	private JPanel buildControlPanel()
@@ -64,7 +75,7 @@ public class Game extends JFrame
 		{
 			public void actionPerformed(ActionEvent e)
 			{
-				setup();
+				newGame();
 			}
 		});
 

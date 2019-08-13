@@ -13,6 +13,10 @@ public class Board extends JPanel
 	
 	protected Cell[] cells;
 	protected Ship[] ships;
+
+	private boolean shipPlacementInProgress;
+	private int firstShipCoordinate;
+	private int currentShipType;
 		
 	Board(boolean isPlayerBoard, String name, Game game)
 	{
@@ -35,12 +39,10 @@ public class Board extends JPanel
 		for (int i = 0; i < ships.length; i++)
 		{
 			ships[i] = new Ship(i);			
-		}		
-	}
+		}
 
-	protected void setup()
-	{
-
+		shipPlacementInProgress = false;
+		currentShipType = 1;
 	}
 
 	protected void reset()
@@ -52,13 +54,16 @@ public class Board extends JPanel
 			add(cells[i]);			
 		}
 
-		activate();
+		if(isPlayerBoard)
+		{
+			activate();	
+		} 
 		
 		// Remember that ship type 0 is no ship
-		for (int i = 0; i < ships.length; i++)
+		ships[0] = new Ship(0);
+		for (int i = 1; i < ships.length; i++)
 		{
 			ships[i] = new Ship(i);
-			placeShip(i);	
 		}
 
 		revalidate();
@@ -73,47 +78,73 @@ public class Board extends JPanel
 		}
 	}
 
-	private boolean placeShip(int shipType)
+	protected boolean placeShip(int coordinate)
 	{
-		// if(horizontal)
-		// {
-		// 	// Is it too long for the space?
-		// 	if(((coordinate % 10) + Battleship.SHIP_LENGTHS[shipType]) > Battleship.BOARD_DIMENSION)
-		// 	{
-		// 		return false;
-		// 	}
-		// 	// Are there any ships in the way?
-		// 	for(int i = 0; i < Battleship.SHIP_LENGTHS[shipType]; i++)
-		// 	{
-		// 		if(cells[coordinate + i].hasShip)
-		// 		{
-		// 			return false;
-		// 		}
-		// 	}
-		// 	// Add ship to the relevant cells.
-		// 	for(int i = 0; i < Battleship.SHIP_LENGTHS[shipType]; i++)
-		// 	{
-		// 		cells[coordinate + i].addShip(shipType);
-		// 	}
-		// }
-		// else
-		// {
-		// 	// Is it too long for the (now, vertical) space?
-		// 	if(((coordinate / 10) + Battleship.SHIP_LENGTHS[shipType]) > Battleship.BOARD_DIMENSION)
-		// 	{
-		// 		return false;
-		// 	}
-		// 	// Are there any ships in the way?
-		// 	for(int i = 0; i < Battleship.SHIP_LENGTHS[shipType]; i++)
-		// 	{
-		// 		if(cells[coordinate + i].hasShip)
-		// 		{
-		// 			return false;
-		// 		}
-		// 	}
-			// addShip(shipType, coordinate, horizontal);
-		// }
+		if(!shipPlacementInProgress)
+		{
+			if(cells[coordinate].hasShip)
+			{
+				Log.debug("Cell Already Has Ship");
+				return false;
+			}
+			cells[coordinate].addShip(currentShipType);
+			shipPlacementInProgress = true;
+			firstShipCoordinate = coordinate;
+			return true;
+		}
+		if(coordinate == firstShipCoordinate)
+		{
+			cells[coordinate].removeShip();
+			shipPlacementInProgress = false;
+			return false;
+		}
+		boolean horizontal = ((coordinate / Battleship.BOARD_DIMENSION) 
+							== (firstShipCoordinate / Battleship.BOARD_DIMENSION)) ? true : false;
+
+
+		// if horizontal
+		if (horizontal)
+		{
+			// Is it too long for the space?
+			if(((firstShipCoordinate % 10) + Battleship.SHIP_LENGTHS[currentShipType]) > Battleship.BOARD_DIMENSION)
+			{
+				return false;
+			}
+			// Are there any ships in the way?
+			for(int i = 1; i < Battleship.SHIP_LENGTHS[currentShipType]; i++)
+			{
+				if(cells[firstShipCoordinate + i].hasShip)
+				{
+					return false;
+				}
+			}
+			// Add ship to the relevant cells.
+			addShip(currentShipType, firstShipCoordinate, horizontal);
+		}
+		else
+		{
+			// Is it too long for the (now, vertical) space?
+			if(((firstShipCoordinate / 10) + Battleship.SHIP_LENGTHS[currentShipType]) > Battleship.BOARD_DIMENSION)
+			{
+				return false;
+			}
+			// Are there any ships in the way?
+			for(int i = 1; i < Battleship.SHIP_LENGTHS[currentShipType]; i++)
+			{
+				if(cells[firstShipCoordinate + (i * Battleship.BOARD_DIMENSION)].hasShip)
+				{
+					return false;
+				}
+			}
+			addShip(currentShipType, firstShipCoordinate, horizontal);
+		}
 		// If we made it here, all is well.
+		shipPlacementInProgress = false;
+		currentShipType++;
+		if (!(currentShipType < ships.length))
+		{
+			allShipsPlaced();
+		}
 		return true;
 	}
 	
@@ -138,6 +169,16 @@ public class Board extends JPanel
 		}
 		// If we made it here, all is well.
 	}
+
+	private void allShipsPlaced()
+	{
+		for(Cell cell : cells)
+		{
+			cell.deactivate();
+		}
+		game.setupComplete();
+	}
+
 
 	// Checks to see if any ships are afloat.
 	protected boolean hasShips()
