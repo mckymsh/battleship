@@ -1,50 +1,144 @@
 package battleship3;
 
 import java.awt.*;
+import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.border.*; // Why, Java
 
 public class Board extends JPanel
 {
+	protected boolean isPlayerBoard;
 	protected String name;
+	protected Game game;
 	
 	protected Cell[] cells;
 	protected Ship[] ships;
 		
-	Board(String name)
+	Board(boolean isPlayerBoard, String name, Game game)
 	{
-		Border border = BorderFactory.createLineBorder(Color.black);
+		this.isPlayerBoard = isPlayerBoard;
 		this.name = name;
+		this.game = game;
 		
 		cells = new Cell[Battleship.BOARD_DIMENSION * Battleship.BOARD_DIMENSION];
 		ships = new Ship[Battleship.SHIP_NAMES.length];
 		
-		JPanel cellPanel = new JPanel();
-		cellPanel.setBorder(border);
-		cellPanel.setLayout(new GridLayout(Battleship.BOARD_DIMENSION, Battleship.BOARD_DIMENSION));
+		setPreferredSize(new Dimension(Battleship.BOARD_DIMENSION * 30, Battleship.BOARD_DIMENSION * 30));
+		setLayout(new GridLayout(Battleship.BOARD_DIMENSION, Battleship.BOARD_DIMENSION));
 		for(int i = 0; i < cells.length; i++)
 		{
-			cells[i] = new Cell();
-			cellPanel.add(cells[i]);
+			cells[i] = new Cell(i, this);
+			add(cells[i]);
+		}
+		
+		// Remember that ship type 0 is no ship
+		for (int i = 0; i < ships.length; i++)
+		{
+			ships[i] = new Ship(i);			
+		}		
+	}
+
+	protected void setup()
+	{
+
+	}
+
+	protected void reset()
+	{
+		removeAll();
+		for(int i = 0; i < cells.length; i++)
+		{
+			cells[i] = new Cell(i, this);
+			add(cells[i]);			
 		}
 
-		JPanel statusPanel = new JPanel();
-		statusPanel.setLayout(new BoxLayout(statusPanel, BoxLayout.Y_AXIS));
-
-		// Remember that ship type 0 is no ship,
-		// so it doesn't need to be on the panel.
-		ships[0] = new Ship(0);
-		for (int i = 1; i < ships.length; i++)
+		activate();
+		
+		// Remember that ship type 0 is no ship
+		for (int i = 0; i < ships.length; i++)
 		{
 			ships[i] = new Ship(i);
-			statusPanel.add(new JLabel(ships[i].status));
+			placeShip(i);	
 		}
 
-		this.setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
-		this.add(cellPanel);
-		this.add(statusPanel);
+		revalidate();
+		repaint();
+	}
+
+	protected void activate()
+	{
+		for(Cell cell : cells)
+		{
+			cell.activate();
+		}
+	}
+
+	private boolean placeShip(int shipType)
+	{
+		// if(horizontal)
+		// {
+		// 	// Is it too long for the space?
+		// 	if(((coordinate % 10) + Battleship.SHIP_LENGTHS[shipType]) > Battleship.BOARD_DIMENSION)
+		// 	{
+		// 		return false;
+		// 	}
+		// 	// Are there any ships in the way?
+		// 	for(int i = 0; i < Battleship.SHIP_LENGTHS[shipType]; i++)
+		// 	{
+		// 		if(cells[coordinate + i].hasShip)
+		// 		{
+		// 			return false;
+		// 		}
+		// 	}
+		// 	// Add ship to the relevant cells.
+		// 	for(int i = 0; i < Battleship.SHIP_LENGTHS[shipType]; i++)
+		// 	{
+		// 		cells[coordinate + i].addShip(shipType);
+		// 	}
+		// }
+		// else
+		// {
+		// 	// Is it too long for the (now, vertical) space?
+		// 	if(((coordinate / 10) + Battleship.SHIP_LENGTHS[shipType]) > Battleship.BOARD_DIMENSION)
+		// 	{
+		// 		return false;
+		// 	}
+		// 	// Are there any ships in the way?
+		// 	for(int i = 0; i < Battleship.SHIP_LENGTHS[shipType]; i++)
+		// 	{
+		// 		if(cells[coordinate + i].hasShip)
+		// 		{
+		// 			return false;
+		// 		}
+		// 	}
+			// addShip(shipType, coordinate, horizontal);
+		// }
+		// If we made it here, all is well.
+		return true;
 	}
 	
+	// This method places the designated ship at the designated coordinates.
+	protected void addShip(int shipType, int coordinate, boolean horizontal)
+	{
+		if(horizontal)
+		{
+			// Add ship to the relevant cells.
+			for(int i = 0; i < Battleship.SHIP_LENGTHS[shipType]; i++)
+			{
+				cells[coordinate + i].addShip(shipType);
+			}
+		}
+		else
+		{
+			// Add ship to the relevant cells.
+			for(int i = 0; i < Battleship.SHIP_LENGTHS[shipType]; i++)
+			{
+				cells[coordinate + (i*10)].addShip(shipType);
+			}
+		}
+		// If we made it here, all is well.
+	}
+
 	// Checks to see if any ships are afloat.
 	protected boolean hasShips()
 	{
@@ -59,56 +153,6 @@ public class Board extends JPanel
 		}
 		// Boo, no ships. We lose.
 		return false;
-	}
-	
-	// This method places the designated ship at the designated coordinates.
-	// It checks for problems before actually changing the board.
-	protected boolean addShip(int shipType, int coordinate, boolean horizontal)
-	{
-		if(horizontal)
-		{
-			// Is it too long for the space?
-			if(((coordinate % 10) + Battleship.SHIP_LENGTHS[shipType]) > Battleship.BOARD_DIMENSION)
-			{
-				return false;
-			}
-			// Are there any ships in the way?
-			for(int i = 0; i < Battleship.SHIP_LENGTHS[shipType]; i++)
-			{
-				if(cells[coordinate + i].hasShip)
-				{
-					return false;
-				}
-			}
-			// Add ship to the relevant cells.
-			for(int i = 0; i < Battleship.SHIP_LENGTHS[shipType]; i++)
-			{
-				cells[coordinate + i].addShip(shipType);
-			}
-		}
-		else
-		{
-			// Is it too long for the (now, vertical) space?
-			if(((coordinate / 10) + Battleship.SHIP_LENGTHS[shipType]) > Battleship.BOARD_DIMENSION)
-			{
-				return false;
-			}
-			// Are there any ships in the way?
-			for(int i = 0; i < Battleship.SHIP_LENGTHS[shipType]; i++)
-			{
-				if(cells[coordinate + i].hasShip)
-				{
-					return false;
-				}
-			}
-			// Add ship to the relevant cells.
-			for(int i = 0; i < Battleship.SHIP_LENGTHS[shipType]; i++)
-			{
-				cells[coordinate + (i*10)].addShip(shipType);
-			}
-		}
-		// If we made it here, all is well.
-		return true;
 	}
 	
 	// Adds a hit to the cell and any ship that's on it.
@@ -137,16 +181,16 @@ public class Board extends JPanel
 			}
 			
 			// If this hit sank the ship
-			if(ships[cells[coordinate].shipType].addHit())
+			if(ships[cells[coordinate].shipId].addHit())
 			{
 				// You know the commercial-- ya gotta say it if ya can!
-				if(cells[coordinate].shipType == 2)
+				if(cells[coordinate].shipId == 2)
 				{
 					Log.debug("You sunk my Battleship!");
 				}
 				else
 				{
-					Log.debug(Battleship.SHIP_NAMES[cells[coordinate].shipType] + " has been sunk!");
+					Log.debug(Battleship.SHIP_NAMES[cells[coordinate].shipId] + " has been sunk!");
 				}
 				
 				// Update the cell
@@ -156,7 +200,7 @@ public class Board extends JPanel
 				// No longer necessary in this version, but it does no harm.
 				for(int i = 0; i < cells.length; i++)
 				{
-					if(cells[i].shipType == cells[coordinate].shipType)
+					if(cells[i].shipId == cells[coordinate].shipId)
 					{
 						cells[i].state = Battleship.SUNK_SYMBOL;
 					}

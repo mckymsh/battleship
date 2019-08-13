@@ -5,6 +5,7 @@ public class Ship
 	protected int type;
 	protected int length;	
 	protected String name;
+	protected String letter;
 	protected String abbreviation;
 	
 	protected int hits;
@@ -18,6 +19,7 @@ public class Ship
 		
 		this.length = Battleship.SHIP_LENGTHS[type];
 		this.name = Battleship.SHIP_NAMES[type];
+		this.letter = Battleship.SHIP_LETTERS[type];
 		this.abbreviation = Battleship.SHIP_ABBREVIATIONS[type];
 		
 		hits = 0;
