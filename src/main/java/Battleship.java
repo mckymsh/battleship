@@ -24,10 +24,12 @@ public class Battleship
 	protected static final Color 		SHIP_COLOR			= Color.DARK_GRAY;
 	
 	// Symbols that show in the console.
+	protected static final String BLANK_SYMBOL			= "";
+	protected static final Color TARGET_COLOR			= Color.YELLOW;
 	protected static final String MISS_SYMBOL			= "O";
-	protected static final Color MISS_COLOR				= Color.RED;
+	protected static final Color MISS_COLOR				= Color.GREEN;
 	protected static final String HIT_SYMBOL			= "X";
-	protected static final Color HIT_COLOR				= Color.ORANGE;
+	protected static final Color HIT_COLOR				= Color.RED;
 	protected static final String SUNK_SYMBOL			= "#";
 	protected static final Color SUNK_COLOR				= Color.BLACK;
 

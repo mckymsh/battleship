@@ -36,10 +36,28 @@ public class Game extends JFrame
 		newGame();
 	}
 
+	private void fire()
+	{
+		computerBoard.fire();
+		if(!computerBoard.hasShips())
+		{
+			showMessage("Player Wins!");
+		}
+		else if(!playerBoard.hasShips())
+		{
+			showMessage("Computer Wins!");
+		}
+		else
+		{
+			// More game
+		}
+	}
+
 	private void newGame()
 	{
 		Log.debug("Setup");
 		resetBoards();
+		playerBoard.activate();
 		displayPanel.setText("Place Your Ships");
 	}
 
@@ -52,12 +70,18 @@ public class Game extends JFrame
 	protected void setupComplete()
 	{
 		Log.debug("All Ships Placed");
-		beginTurn();
+		playerBoard.deactivate();
+		computerBoard.activate();
 	}
 
 	private void beginTurn()
 	{
-		displayPanel.setText("Select Coordinates");
+		showMessage("Select Coordinates");
+	}
+
+	protected void showMessage(String message)
+	{
+		displayPanel.setText(message);
 	}
 
 	private JPanel buildControlPanel()
@@ -76,6 +100,13 @@ public class Game extends JFrame
 			public void actionPerformed(ActionEvent e)
 			{
 				newGame();
+			}
+		});
+		fireButton.addActionListener(new ActionListener()
+		{
+			public void actionPerformed(ActionEvent e)
+			{
+				fire();
 			}
 		});
 

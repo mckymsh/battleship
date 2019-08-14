@@ -1,3 +1,3 @@
 @echo off
 
-java -jar .\target\battleship3-1.0.jar
+java -jar .\target\battleship3-3.jar

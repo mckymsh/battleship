@@ -8,7 +8,6 @@ import javax.swing.border.*;
 public class Cell extends JLabel
 {
 	protected boolean hasShip;
-	protected boolean active;
 	protected int shipId;
 	protected int coordinate;
 	protected String state;
@@ -24,11 +23,10 @@ public class Cell extends JLabel
 		// Keep in mind ship type 0 is no ship.
 		addShip(0);
 		setHorizontalAlignment(SwingConstants.CENTER);
-		setVerticalAlignment(SwingConstants.CENTER);
-		
+		setVerticalAlignment(SwingConstants.CENTER);		
 		setOpaque(true);
 
-		state = "";
+		state = Battleship.BLANK_SYMBOL;
 		this.coordinate = coordinate;
 		if ((coordinate / 10) % 2 == 0) // Even row
 		{
@@ -55,30 +53,68 @@ public class Cell extends JLabel
 		originalColor = this.getBackground();	
 	}
 
-	protected void activate()
+	protected void activatePlaceShips()
 	{
-		active = true;
-		mouseListener = new ShipPlacementListener();
+		mouseListener = new MouseListener()
+		{
+			public void mouseClicked(MouseEvent e)
+			{
+				Log.debug("Player clicked cell #" + coordinate);
+				sendShipPlacementRequest();
+			}
+
+		    public void mouseEntered(MouseEvent e)
+		    {
+		    	setBorder(new LineBorder(Color.BLACK));
+		    }
+
+		    public void mouseExited(MouseEvent e)
+		    {
+		    	setBorder(BorderFactory.createEmptyBorder());
+		    }
+
+		    public void mousePressed(MouseEvent e){}
+		    public void mouseReleased(MouseEvent e){}
+		};
+		addMouseListener(mouseListener);
+	}
+
+	protected void activateSelectCoordinates()
+	{
+		mouseListener = new MouseListener()
+		{
+			public void mouseClicked(MouseEvent e)
+			{
+				Log.debug("Player clicked cell #" + coordinate);
+				parentBoard.setFiringCoordinate(coordinate);
+			}
+
+		    public void mouseEntered(MouseEvent e)
+		    {
+		    	setBorder(new LineBorder(Color.BLACK));
+		    }
+
+		    public void mouseExited(MouseEvent e)
+		    {
+	    		setBorder(BorderFactory.createEmptyBorder());
+		    }
+
+		    public void mousePressed(MouseEvent e){}
+		    public void mouseReleased(MouseEvent e){}
+		};
 		addMouseListener(mouseListener);
 	}
 
 	protected void deactivate()
 	{
-		active = false;
+		setBorder(BorderFactory.createEmptyBorder());
 		removeMouseListener(mouseListener);
 		mouseListener = null;
 	}
 
 	protected void sendShipPlacementRequest()
 	{
-		if(parentBoard.placeShip(this.coordinate))
-		{
-			Log.debug("Placed a ship?");
-		}
-		else
-		{
-			Log.debug("Ah, ship. Didn't work.");
-		}
+		parentBoard.placeShip(this.coordinate);
 	}
 	
 	// Adds a ship.
@@ -89,55 +125,8 @@ public class Cell extends JLabel
 		hasShip = (shipId == 0) ? false : true;
 	}
 
-	protected void removeShip()
+	protected void defaultBackground()
 	{
 		setBackground(originalColor);
-		this.shipId = 0;
-		hasShip = false;
 	}
-
-	// public void mouseClicked(MouseEvent e)
-	// {
-	// 	Cell cell = (Cell) e.getSource();
-	// 	Log.debug("Player clicked cell #" + cell.coordinate);
-	// 	if(!active)
-	// 	{
-	// 		return; // shouldn't happen
-	// 	}
-	// 	cell.setBackground(Color.DARK_GRAY);
-	// 	// if (cell.state == Battleship.MISS_SYMBOL)
-	// 	// {
-	// 	// 	cell.state = Battleship.HIT_SYMBOL;
-	// 	// 	cell.setBackground(Color.RED);
-	// 	// }
-	// 	// else if (cell.state == Battleship.HIT_SYMBOL)
-	// 	// {
-	// 	// 	cell.state = Battleship.MISS_SYMBOL;
-	// 	// 	cell.setBackground(Color.ORANGE);
-	// 	// }
-	// 	// else
-	// 	// {
-	// 	// 	cell.state = Battleship.HIT_SYMBOL;
-	// 	// 	cell.setBackground(Color.RED);
-	// 	// }
-	// }
-
- //    public void mouseEntered(MouseEvent e)
- //    {
- //    	if(parentBoard.isPlayerBoard && parentBoard.game.state == Battleship.SETUP)
- //    	{
- //    		setBorder(new LineBorder(Color.BLACK));
- //    	}
- //    }
-
- //    public void mouseExited(MouseEvent e)
- //    {
- //    	if(parentBoard.isPlayerBoard && parentBoard.game.state == Battleship.SETUP)
- //    	{
-	//     	setBorder(BorderFactory.createEmptyBorder());
-	//     }
- //    }
-
- //    public void mousePressed(MouseEvent e){}
- //    public void mouseReleased(MouseEvent e){}
 }

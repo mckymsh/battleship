@@ -16,7 +16,10 @@ public class Board extends JPanel
 
 	private boolean shipPlacementInProgress;
 	private int startCoordinate;
+	private int currentCoordinate;
 	private int currentShipType;
+
+	private int firingCoordinate;
 		
 	Board(boolean isPlayerBoard, String name, Game game)
 	{
@@ -43,6 +46,8 @@ public class Board extends JPanel
 
 		shipPlacementInProgress = false;
 		currentShipType = 1;
+
+		firingCoordinate = -1;
 	}
 
 	protected void reset()
@@ -53,11 +58,6 @@ public class Board extends JPanel
 			cells[i] = new Cell(i, this);
 			add(cells[i]);			
 		}
-
-		if(isPlayerBoard)
-		{
-			activate();	
-		} 
 		
 		currentShipType = 1;
 		// Remember that ship type 0 is no ship
@@ -73,43 +73,91 @@ public class Board extends JPanel
 
 	protected void activate()
 	{
-		for(Cell cell : cells)
+		if(isPlayerBoard)
 		{
-			cell.activate();
+			for(Cell cell : cells)
+			{
+				cell.activatePlaceShips();
+			}
+		}
+		else
+		{
+			Log.debug("Should be activating computer board");
+			for(Cell cell : cells)
+			{
+				cell.activateSelectCoordinates();
+			}
 		}
 	}
 
-	protected boolean placeShip(int selectedCoordinate)
+	protected void deactivate()
 	{
+		for(Cell cell : cells)
+		{
+			cell.deactivate();
+		}
+	}
+
+	protected void setFiringCoordinate(int currentCoordinate)
+	{
+		if(currentCoordinate == firingCoordinate) // Clicking again should cancel
+		{
+			cells[currentCoordinate].defaultBackground();
+			game.showMessage("Targeting Cancelled");
+			firingCoordinate = -1;
+			return;
+		}
+
+		if(!(firingCoordinate < 0))
+		{
+			cells[firingCoordinate].defaultBackground(); // Unused cell back to blank
+		}
+		firingCoordinate = currentCoordinate;
+
+		if(!cells[firingCoordinate].state.equals(Battleship.BLANK_SYMBOL))
+		{
+			game.showMessage("You've already fired there.");
+			firingCoordinate = -1;
+			return;
+		}
+		
+		cells[firingCoordinate].setBackground(Battleship.TARGET_COLOR);
+		game.showMessage("Targeting Cell " + firingCoordinate);
+	}
+
+	// This method is an absolute disaster. Fix this.
+	protected void placeShip(int coordinate)
+	{
+		currentCoordinate = coordinate;
 		// If this is our first click for this ship.
 		if(!shipPlacementInProgress)
 		{
-			if(cells[selectedCoordinate].hasShip)
+			if(cells[currentCoordinate].hasShip)
 			{
-				Log.debug("Cell Already Has Ship");
-				return false;
+				game.showMessage("Cell Already Has Ship");
+				return;
 			}
-			cells[selectedCoordinate].addShip(currentShipType);
+			game.showMessage("Placing " + Battleship.SHIP_NAMES[currentShipType]);
+			cells[currentCoordinate].setBackground(Battleship.SHIP_COLOR);
 			shipPlacementInProgress = true;
-			startCoordinate = selectedCoordinate;
-			return true;
+			startCoordinate = currentCoordinate;
+			return;
 		}
 
-		// If the square is clicked again before the second selectedCoordinate,
+		// If the square is clicked again before the second currentCoordinate,
 		// it cancels the placement.
-		if(selectedCoordinate == startCoordinate)
+		if(currentCoordinate == startCoordinate)
 		{
-			cells[selectedCoordinate].removeShip();
+			cells[currentCoordinate].defaultBackground();
 			shipPlacementInProgress = false;
-			return false;
+			cancelPlacement("Placement Cancelled");
+			return;
 		}
-
-
 
 		int shipOrientation = Battleship.NONE;
-		if((selectedCoordinate / Battleship.BOARD_DIMENSION) == (startCoordinate / Battleship.BOARD_DIMENSION))
+		if((currentCoordinate / Battleship.BOARD_DIMENSION) == (startCoordinate / Battleship.BOARD_DIMENSION))
 		{
-			if((selectedCoordinate > startCoordinate))
+			if((currentCoordinate > startCoordinate))
 			{
 				shipOrientation = Battleship.EAST;
 			}
@@ -118,9 +166,9 @@ public class Board extends JPanel
 				shipOrientation = Battleship.WEST;
 			}
 		}
-		else if((selectedCoordinate % Battleship.BOARD_DIMENSION) == (startCoordinate % Battleship.BOARD_DIMENSION))
+		else if((currentCoordinate % Battleship.BOARD_DIMENSION) == (startCoordinate % Battleship.BOARD_DIMENSION))
 		{
-			if((selectedCoordinate > startCoordinate))
+			if((currentCoordinate > startCoordinate))
 			{
 				shipOrientation = Battleship.SOUTH;
 			}
@@ -131,8 +179,8 @@ public class Board extends JPanel
 		}
 		else
 		{
-			Log.debug("Cells Not Aligned");
-			return false;
+			cancelPlacement("Cells Not Aligned");
+			return;
 		}
 
 		if(shipOrientation == Battleship.NORTH)
@@ -140,14 +188,17 @@ public class Board extends JPanel
 			// Check North
 			if(((startCoordinate / 10) - (Battleship.SHIP_LENGTHS[currentShipType]-1)) < 0)
 			{
-				return false;
+				cancelPlacement("Out of Bounds");
+				return;
 			}
 			// Are there any ships in the way?
 			for(int i = 1; i < Battleship.SHIP_LENGTHS[currentShipType]; i++)
 			{
-				if(cells[startCoordinate - (i * Battleship.BOARD_DIMENSION)].hasShip)
+				int checkCoord = startCoordinate - (i * Battleship.BOARD_DIMENSION); // too long
+				if(cells[checkCoord].hasShip)
 				{
-					return false;
+					cancelPlacement("Blocked by " + Battleship.SHIP_NAMES[cells[checkCoord].shipId]);
+					return;
 				}
 			}
 			for(int i = 0; i < Battleship.SHIP_LENGTHS[currentShipType]; i++)
@@ -160,14 +211,17 @@ public class Board extends JPanel
 			// Is it too long for the space?
 			if(((startCoordinate % 10) + Battleship.SHIP_LENGTHS[currentShipType]) > Battleship.BOARD_DIMENSION)
 			{
-				return false;
+				cancelPlacement("Out of Bounds");
+				return;
 			}
 			// Are there any ships in the way?
 			for(int i = 1; i < Battleship.SHIP_LENGTHS[currentShipType]; i++)
 			{
-				if(cells[startCoordinate + i].hasShip)
+				int checkCoord = startCoordinate + i;
+				if(cells[checkCoord].hasShip)
 				{
-					return false;
+					cancelPlacement("Blocked by " + Battleship.SHIP_NAMES[cells[checkCoord].shipId]);
+					return;
 				}
 			}
 
@@ -181,14 +235,17 @@ public class Board extends JPanel
 			// Is it too long for the (now, vertical) space?
 			if(((startCoordinate / 10) + Battleship.SHIP_LENGTHS[currentShipType]) > Battleship.BOARD_DIMENSION)
 			{
-				return false;
+				cancelPlacement("Out of Bounds");
+				return;
 			}
 			// Are there any ships in the way?
 			for(int i = 1; i < Battleship.SHIP_LENGTHS[currentShipType]; i++)
 			{
-				if(cells[startCoordinate + (i * Battleship.BOARD_DIMENSION)].hasShip)
+				int checkCoord = startCoordinate + (i * Battleship.BOARD_DIMENSION);
+				if(cells[checkCoord].hasShip)
 				{
-					return false;
+					cancelPlacement("Blocked by " + Battleship.SHIP_NAMES[cells[checkCoord].shipId]);
+					return;
 				}
 			}
 			for(int i = 0; i < Battleship.SHIP_LENGTHS[currentShipType]; i++)
@@ -201,14 +258,17 @@ public class Board extends JPanel
 			// Is it too long for the space?
 			if(((startCoordinate % 10) - (Battleship.SHIP_LENGTHS[currentShipType]-1)) < 0)
 			{
-				return false;
+				cancelPlacement("Out of Bounds");
+				return;
 			}
 			// Are there any ships in the way?
 			for(int i = 1; i < Battleship.SHIP_LENGTHS[currentShipType]; i++)
 			{
-				if(cells[startCoordinate - i].hasShip)
+				int checkCoord = startCoordinate - i;
+				if(cells[checkCoord].hasShip)
 				{
-					return false;
+					cancelPlacement("Blocked by " + Battleship.SHIP_NAMES[cells[checkCoord].shipId]);
+					return;
 				}
 			}
 
@@ -220,52 +280,30 @@ public class Board extends JPanel
 		else
 		{
 			// If this happens, something has gone horribly wrong.
-			Log.debug("Ship Has No Orientation");
-			return false;
+			Log.debug("Ship Has No Orientation?");
+			cancelPlacement("Error");
+			return;
 		}
 
 		// If we made it here, all is well.
+		game.showMessage("Ship Placed!");
 		shipPlacementInProgress = false;
-		Log.debug("Current shipType before increment = " + currentShipType);
+		Log.debug("currentShipType = " + currentShipType);
 		currentShipType++;
 		if (!(currentShipType < ships.length))
 		{
-			allShipsPlaced();
+			game.setupComplete();
 		}
-		return true;
-	}
-	
-	// This method places the designated ship at the designated coordinates.
-	protected void addShip(int currentShipType, int coordinate, boolean horizontal)
-	{
-		if(horizontal)
-		{
-			// Add ship to the relevant cells.
-			for(int i = 0; i < Battleship.SHIP_LENGTHS[currentShipType]; i++)
-			{
-				cells[coordinate + i].addShip(currentShipType);
-			}
-		}
-		else
-		{
-			// Add ship to the relevant cells.
-			for(int i = 0; i < Battleship.SHIP_LENGTHS[currentShipType]; i++)
-			{
-				cells[coordinate + (i*10)].addShip(currentShipType);
-			}
-		}
-		// If we made it here, all is well.
+		return;
 	}
 
-	private void allShipsPlaced()
+	protected void cancelPlacement(String reason)
 	{
-		for(Cell cell : cells)
-		{
-			cell.deactivate();
-		}
-		game.setupComplete();
+		game.showMessage(reason);
+		cells[startCoordinate].defaultBackground();
+		cells[currentCoordinate].defaultBackground();
+		shipPlacementInProgress = false;
 	}
-
 
 	// Checks to see if any ships are afloat.
 	protected boolean hasShips()
@@ -283,53 +321,76 @@ public class Board extends JPanel
 		return false;
 	}
 	
-	// Adds a hit to the cell and any ship that's on it.
-	protected boolean addHit(int coordinate)
+	protected boolean fire()
 	{
-		if(cells[coordinate].state == Battleship.MISS_SYMBOL)
+		if(firingCoordinate < 0)
 		{
-			Log.debug("You've already fired there.");
+			game.showMessage("Must Select Coordinate");
+			return false;
+		}
+		boolean result = addHit();
+		cells[firingCoordinate].deactivate();
+		firingCoordinate = -1;
+		return result;
+	}
+
+	// Adds a hit to the cell and any ship that's on it.
+	protected boolean addHit()
+	{
+		if(cells[firingCoordinate].state == Battleship.MISS_SYMBOL)
+		{
+			game.showMessage("You've already fired there.");
+			cells[firingCoordinate].setBackground(Battleship.MISS_COLOR);
+			cells[firingCoordinate].state = Battleship.MISS_SYMBOL;
 			return false;
 		}
 			
 		// If there's a ship there...
-		if(cells[coordinate].hasShip)
+		if(cells[firingCoordinate].hasShip)
 		{
+			cells[firingCoordinate].setBackground(Battleship.HIT_COLOR);
 			// Let 'em know
-			Log.debug("That's a hit!");
+			String message = "Hit!";
 			
 			// If we've already been hit here:
 			// * Don't add hits to the ship
 			// * Count it as a miss?
-			if(		(cells[coordinate].state == Battleship.HIT_SYMBOL)
-				||	(cells[coordinate].state == Battleship.SUNK_SYMBOL))
+			if(		(cells[firingCoordinate].state == Battleship.HIT_SYMBOL)
+				||	(cells[firingCoordinate].state == Battleship.SUNK_SYMBOL))
 			{
-				Log.debug("... but you've already shot there!");
+				message += " ... again.";
+				game.showMessage(message);
 				return true;
+			}
+			else
+			{
+				game.showMessage(message);
 			}
 			
 			// If this hit sank the ship
-			if(ships[cells[coordinate].shipId].addHit())
+			if(ships[cells[firingCoordinate].shipId].addHit())
 			{
+				cells[firingCoordinate].setBackground(Battleship.SUNK_COLOR);
 				// You know the commercial-- ya gotta say it if ya can!
-				if(cells[coordinate].shipId == 2)
+				if(cells[firingCoordinate].shipId == 2)
 				{
-					Log.debug("You sunk my Battleship!");
+					game.showMessage("You sunk my Battleship!");
 				}
 				else
 				{
-					Log.debug(Battleship.SHIP_NAMES[cells[coordinate].shipId] + " has been sunk!");
+					game.showMessage(Battleship.SHIP_NAMES[cells[firingCoordinate].shipId] + " has sunk!");
 				}
 				
 				// Update the cell
-				cells[coordinate].state = Battleship.SUNK_SYMBOL;
+				cells[firingCoordinate].state = Battleship.SUNK_SYMBOL;
 				
 				// If it's sunk, make sure all of the cells match.
 				// No longer necessary in this version, but it does no harm.
 				for(int i = 0; i < cells.length; i++)
 				{
-					if(cells[i].shipId == cells[coordinate].shipId)
+					if(cells[i].shipId == cells[firingCoordinate].shipId)
 					{
+						cells[i].setBackground(Battleship.SUNK_COLOR);
 						cells[i].state = Battleship.SUNK_SYMBOL;
 					}
 				}
@@ -337,7 +398,8 @@ public class Board extends JPanel
 			else
 			{
 				// If it's hit but not sunk.
-				cells[coordinate].state = Battleship.HIT_SYMBOL;
+				cells[firingCoordinate].setBackground(Battleship.HIT_COLOR);
+				cells[firingCoordinate].state = Battleship.HIT_SYMBOL;
 			}		
 			
 			// Finally, return a hit.
@@ -346,8 +408,9 @@ public class Board extends JPanel
 		else
 		{
 			// *Sad trombones*
-			Log.debug("That's a miss! :(");
-			cells[coordinate].state = Battleship.MISS_SYMBOL;
+			game.showMessage("That's a miss! :(");
+			cells[firingCoordinate].setBackground(Battleship.MISS_COLOR);
+			cells[firingCoordinate].state = Battleship.MISS_SYMBOL;
 			return false;
 		}	
 	}
