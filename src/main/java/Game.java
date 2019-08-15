@@ -36,6 +36,7 @@ public class Game extends JFrame
 
 	private void startGame()
 	{
+		Log.debug("############################################################");
 		Log.debug("Setup");
 		resetBoards();
 		computerBoard = computer.placeShips(computerBoard);
@@ -57,7 +58,7 @@ public class Game extends JFrame
 		startGame();
 	}
 
-	private void volley()
+	protected void volley()
 	{
 		Log.debug("Volley");
 		if(computerBoard.firingCoordinate < 0) // Player fires
@@ -96,7 +97,6 @@ public class Game extends JFrame
 
 	private void deactivate()
 	{
-		controlPanel.deactivateFireButton();
 		computerBoard.deactivate();
 		playerBoard.deactivate();
 	}
@@ -105,7 +105,6 @@ public class Game extends JFrame
 	{
 		playerBoard.deactivate();
 		computerBoard.activate();
-		controlPanel.activateFireButton();
 	}
 
 	protected void showMessage(String message)
@@ -113,12 +112,16 @@ public class Game extends JFrame
 		controlPanel.displayPanel.setText(message);
 	}
 
+	private void displayOptions()
+	{
+		Log.debug("Displaying Options");
+	}
+
 	private class ControlPanel extends JPanel
 	{
 		JButton newGameButton;
 		JLabel displayPanel;
-		JButton fireButton;
-		ActionListener fireButtonListener;
+		JButton optionsButton;
 		ControlPanel()
 		{
 			setSize(new Dimension(Battleship.BOARD_DIMENSION * 30, Battleship.BOARD_DIMENSION * 10));
@@ -126,7 +129,7 @@ public class Game extends JFrame
 
 			newGameButton = new JButton("New");
 			displayPanel = new JLabel("Welcome to Battleship", SwingConstants.CENTER);
-			fireButton = new JButton("Fire");
+			optionsButton = new JButton("Options");
 
 			newGameButton.addActionListener(new ActionListener()
 			{
@@ -135,29 +138,17 @@ public class Game extends JFrame
 					newGame();
 				}
 			});
-			fireButtonListener = new ActionListener()
+			optionsButton.addActionListener(new ActionListener()
 			{
 				public void actionPerformed(ActionEvent e)
 				{
-					Log.debug("Fire Clicked");
-					volley();
+					displayOptions();
 				}
-			};
+			});
 
 			add(newGameButton, BorderLayout.LINE_START);
 			add(displayPanel, BorderLayout.CENTER);
-			add(fireButton, BorderLayout.LINE_END);
-		}
-
-		protected void deactivateFireButton()
-		{
-			fireButton.removeActionListener(fireButtonListener);
-		}
-
-		protected void activateFireButton()
-		{
-			Log.debug("Adding fireButtonListener");
-			fireButton.addActionListener(fireButtonListener);
+			add(optionsButton, BorderLayout.LINE_END);
 		}
 	}
 }

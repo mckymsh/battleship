@@ -19,8 +19,11 @@ public class AI
 		results = new int[Battleship.BOARD_DIMENSION * Battleship.BOARD_DIMENSION];
 	}
 
+	// Returns a coordinate to the game,
+	// which it adds to the board for firing.
 	protected int getFiringCoordinate()
 	{
+		// AKA if this is our first shot.
 		if(firingCoordinate < 0)
 		{
 			lastCoordinate = 0;
@@ -29,7 +32,7 @@ public class AI
 		{
 			lastCoordinate = firingCoordinate;
 		}
-		
+
 		if(results[lastCoordinate] == 2)
 		{
 			Log.debug("AI's last shot hit.");
@@ -40,7 +43,7 @@ public class AI
 		}
 		else
 		{
-			Log.debug("This is AI's first shot.");
+			Log.debug("This should not happen.");
 		}
 
 		// Easy peasy mode
@@ -59,6 +62,10 @@ public class AI
 		results[firingCoordinate] = success ? 2 : 1;
 	}
 
+	// Places ships on the provided board and returns it.
+	// In the future, I may pre-make some boards in some way.
+	// Maybe even some abstract boards where the ships are 
+	// all broken up or spell something.
 	protected Board placeShips(Board board)
 	{
 		int coordinate = -1;
@@ -71,20 +78,19 @@ public class AI
 			// Brute force.
 			// Randomly tries ship locations until
 			// it finds something that works.
+			// This is a low-priority fix since
+			// it doesn't really affect anything.
 			do
 			{
 				coordinate = random.nextInt(100);
 				orientation = random.nextInt(4) + 1; // i.e. 1-4, not zero
-				Log.debug("ShipType " + i + ", " + coordinate + "->" + orientation);
+				Log.debug("Attempting ShipType " + i + " at " 
+					+ coordinate + " pointing " + Battleship.ORIENTATIONS[orientation]);
 			}
 			while(!board.placeShip(coordinate, orientation));
 			Log.debug("Ship " + i + " placed successfully.");
 		}	
-		// board.placeShip(0, 2);
-		// board.placeShip(10, 2);
-		// board.placeShip(20, 2);
-		// board.placeShip(30, 2);
-		// board.placeShip(40, 2);
+		
 		// Returns board, now with ships.
 		return board;
 	}

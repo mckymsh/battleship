@@ -88,11 +88,9 @@ public class Board extends JPanel
 
 	protected void setFiringCoordinate(int currentCoordinate)
 	{
-		if(currentCoordinate == firingCoordinate) // Clicking again should cancel
+		if(currentCoordinate == firingCoordinate)
 		{
-			cells[currentCoordinate].defaultBackground();
-			if(!isPlayerBoard) game.showMessage("Targeting Cancelled");
-			firingCoordinate = -1;
+			game.volley();
 			return;
 		}
 
@@ -110,7 +108,7 @@ public class Board extends JPanel
 		}
 		
 		cells[firingCoordinate].setBackground(Battleship.TARGET_COLOR);
-		if(!isPlayerBoard) game.showMessage("Press Fire or Cancel");
+		if(!isPlayerBoard) game.showMessage("Press Again to Fire");
 	}
 
 	// This method is an absolute disaster. Fix this.
@@ -308,7 +306,7 @@ public class Board extends JPanel
 
 	protected void cancelPlacement(String reason)
 	{
-		Log.debug(startCoordinate + " " + currentCoordinate + " " + reason);
+		Log.debug(reason);
 		if(!isPlayerBoard) game.showMessage(reason);
 		cells[startCoordinate].defaultBackground();
 		cells[currentCoordinate].defaultBackground();
@@ -386,13 +384,20 @@ public class Board extends JPanel
 			{
 				cells[firingCoordinate].setBackground(Battleship.SUNK_COLOR);
 				// You know the commercial-- ya gotta say it if ya can!
-				if(cells[firingCoordinate].shipId == 2)
+				if(!isPlayerBoard) 
 				{
-					if(!isPlayerBoard) game.showMessage("You sunk my Battleship!");
+					if(cells[firingCoordinate].shipId == 2)
+					{
+						game.showMessage("You sunk my Battleship!");
+					}
+					else
+					{
+						game.showMessage(Battleship.SHIP_NAMES[cells[firingCoordinate].shipId] + " has sunk!");
+					}
 				}
 				else
 				{
-					if(!isPlayerBoard) game.showMessage(Battleship.SHIP_NAMES[cells[firingCoordinate].shipId] + " has sunk!");
+					// Tell computer what sank
 				}
 				
 				// Update the cell
@@ -431,6 +436,6 @@ public class Board extends JPanel
 			cells[firingCoordinate].setBackground(Battleship.MISS_COLOR);
 			cells[firingCoordinate].state = Battleship.MISS_SYMBOL;
 			return false;
-			}	
+		}	
 	}
 }
