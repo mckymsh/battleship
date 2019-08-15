@@ -7,20 +7,31 @@ public class AI
 	private int firingCoordinate;
 	private Game game;
 	private Random random;
-	private Board resultBoard;
+	private Boolean[] results;
 
 	AI(Game game)
 	{
 		firingCoordinate = -1;
 		game = game;
 		random = new Random();
-		resultBoard = new Board(false, "Result Board", this.game);
+		results = new Boolean[Battleship.BOARD_DIMENSION * Battleship.BOARD_DIMENSION];
 	}
 
 	protected int getFiringCoordinate(Board board)
 	{
-		firingCoordinate = random.nextInt(100);
+		do
+		{
+			firingCoordinate = random.nextInt(100);
+		}
+		while(results[firingCoordinate] != null);
+
 		return firingCoordinate;
+	}
+
+	// Logs the result of a volley as reported through the fire() method in Game.
+	protected void logResult(boolean success)
+	{
+		results[firingCoordinate] = success;
 	}
 
 	protected Board placeShips(Board board)
@@ -51,11 +62,5 @@ public class AI
 		// board.placeShip(40, 2);
 		// Returns board, now with ships.
 		return board;
-	}
-
-	// Logs the result of a volley as reported through the fire() method in Game.
-	protected void logResult(boolean success)
-	{
-		resultBoard.cells[firingCoordinate].state = success ? Battleship.HIT_SYMBOL : Battleship.MISS_SYMBOL;
 	}
 }

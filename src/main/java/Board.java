@@ -32,26 +32,16 @@ public class Board extends JPanel
 		
 		setPreferredSize(new Dimension(Battleship.BOARD_DIMENSION * 30, Battleship.BOARD_DIMENSION * 30));
 		setLayout(new GridLayout(Battleship.BOARD_DIMENSION, Battleship.BOARD_DIMENSION));
-		for(int i = 0; i < cells.length; i++)
-		{
-			cells[i] = new Cell(i, this);
-			add(cells[i]);
-		}
 		
-		// Remember that ship type 0 is no ship
-		for (int i = 0; i < ships.length; i++)
-		{
-			ships[i] = new Ship(i);			
-		}
-
-		shipPlacementInProgress = false;
-		currentShipType = 1;
-
-		firingCoordinate = -1;
+		// reset();
 	}
 
 	protected void reset()
 	{
+		shipPlacementInProgress = false;
+		currentShipType = 1;
+		firingCoordinate = -1;
+
 		removeAll();
 		for(int i = 0; i < cells.length; i++)
 		{
@@ -59,7 +49,6 @@ public class Board extends JPanel
 			add(cells[i]);			
 		}
 		
-		currentShipType = 1;
 		// Remember that ship type 0 is no ship
 		for (int i = 0; i < ships.length; i++)
 		{
@@ -121,7 +110,7 @@ public class Board extends JPanel
 		}
 		
 		cells[firingCoordinate].setBackground(Battleship.TARGET_COLOR);
-		if(!isPlayerBoard) game.showMessage("Targeting Cell " + firingCoordinate);
+		if(!isPlayerBoard) game.showMessage("Press Fire or Cancel");
 	}
 
 	// This method is an absolute disaster. Fix this.

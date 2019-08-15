@@ -31,13 +31,30 @@ public class Game extends JFrame
 
 		computer = new AI(this);
 
-		run();
+		startGame();
 	}
-	
-	protected void run()
+
+	private void startGame()
 	{
-		// Game happens here
-		newGame();
+		Log.debug("Setup");
+		resetBoards();
+		computerBoard = computer.placeShips(computerBoard);
+		computerBoard.revalidate();
+		computerBoard.repaint();
+		playerBoard.activate();
+		showMessage("Place Your Ships");	
+	}
+
+	private void resetBoards()
+	{
+		computerBoard.reset();
+		playerBoard.reset();
+	}
+
+	private void newGame()
+	{
+		resetBoards();
+		startGame();
 	}
 
 	private void volley()
@@ -75,25 +92,6 @@ public class Game extends JFrame
 			showMessage("Computer Wins!");
 		}
 		deactivate();
-
-	}
-
-	private void newGame()
-	{
-		Log.debug("Setup");
-		resetBoards();
-		computerBoard = computer.placeShips(computerBoard);
-		computerBoard.revalidate();
-		computerBoard.repaint();
-		// Start Computer setup
-		playerBoard.activate();
-		showMessage("Place Your Ships");
-	}
-
-	private void resetBoards()
-	{
-		computerBoard.reset();
-		playerBoard.reset();
 	}
 
 	private void deactivate()
