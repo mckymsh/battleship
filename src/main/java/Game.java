@@ -72,7 +72,7 @@ public class Game extends JFrame
 			end();
 		}
 
-		playerBoard.setFiringCoordinate(computer.getFiringCoordinate(playerBoard));
+		playerBoard.setFiringCoordinate(computer.getFiringCoordinate());
 		computer.logResult(playerBoard.fire());
 
 		if(!playerBoard.hasShips())

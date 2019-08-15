@@ -5,25 +5,50 @@ import java.util.Random;
 public class AI
 {
 	private int firingCoordinate;
+	private int lastCoordinate;
 	private Game game;
 	private Random random;
-	private Boolean[] results;
+	private int[] results;
 
-	AI(Game game)
+	public AI(Game game)
 	{
-		firingCoordinate = -1;
 		game = game;
+		firingCoordinate = -1;
+		lastCoordinate = firingCoordinate;
 		random = new Random();
-		results = new Boolean[Battleship.BOARD_DIMENSION * Battleship.BOARD_DIMENSION];
+		results = new int[Battleship.BOARD_DIMENSION * Battleship.BOARD_DIMENSION];
 	}
 
-	protected int getFiringCoordinate(Board board)
+	protected int getFiringCoordinate()
 	{
+		if(firingCoordinate < 0)
+		{
+			lastCoordinate = 0;
+		}
+		else
+		{
+			lastCoordinate = firingCoordinate;
+		}
+		
+		if(results[lastCoordinate] == 2)
+		{
+			Log.debug("AI's last shot hit.");
+		}
+		else if(results[lastCoordinate] == 1)
+		{
+			Log.debug("AI's last shot missed");
+		}
+		else
+		{
+			Log.debug("This is AI's first shot.");
+		}
+
+		// Easy peasy mode
 		do
 		{
 			firingCoordinate = random.nextInt(100);
 		}
-		while(results[firingCoordinate] != null);
+		while(results[firingCoordinate] != 0);
 
 		return firingCoordinate;
 	}
@@ -31,7 +56,7 @@ public class AI
 	// Logs the result of a volley as reported through the fire() method in Game.
 	protected void logResult(boolean success)
 	{
-		results[firingCoordinate] = success;
+		results[firingCoordinate] = success ? 2 : 1;
 	}
 
 	protected Board placeShips(Board board)
