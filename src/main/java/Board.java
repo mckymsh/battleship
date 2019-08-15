@@ -19,7 +19,7 @@ public class Board extends JPanel
 	private int currentCoordinate;
 	private int currentShipType;
 
-	private int firingCoordinate;
+	protected int firingCoordinate;
 		
 	Board(boolean isPlayerBoard, String name, Game game)
 	{
@@ -61,8 +61,7 @@ public class Board extends JPanel
 		
 		currentShipType = 1;
 		// Remember that ship type 0 is no ship
-		ships[0] = new Ship(0);
-		for (int i = 1; i < ships.length; i++)
+		for (int i = 0; i < ships.length; i++)
 		{
 			ships[i] = new Ship(i);
 		}
@@ -103,7 +102,7 @@ public class Board extends JPanel
 		if(currentCoordinate == firingCoordinate) // Clicking again should cancel
 		{
 			cells[currentCoordinate].defaultBackground();
-			game.showMessage("Targeting Cancelled");
+			if(!isPlayerBoard) game.showMessage("Targeting Cancelled");
 			firingCoordinate = -1;
 			return;
 		}
@@ -116,32 +115,33 @@ public class Board extends JPanel
 
 		if(!cells[firingCoordinate].state.equals(Battleship.BLANK_SYMBOL))
 		{
-			game.showMessage("You've already fired there.");
+			if(!isPlayerBoard) game.showMessage("You've already fired there.");
 			firingCoordinate = -1;
 			return;
 		}
 		
 		cells[firingCoordinate].setBackground(Battleship.TARGET_COLOR);
-		game.showMessage("Targeting Cell " + firingCoordinate);
+		if(!isPlayerBoard) game.showMessage("Targeting Cell " + firingCoordinate);
 	}
 
 	// This method is an absolute disaster. Fix this.
-	protected void placeShip(int coordinate)
+	protected boolean addCoordinate(int coordinate)
 	{
 		currentCoordinate = coordinate;
 		// If this is our first click for this ship.
 		if(!shipPlacementInProgress)
 		{
+			Log.debug("currentShipType = " + currentShipType);
 			if(cells[currentCoordinate].hasShip)
 			{
-				game.showMessage("Cell Already Has Ship");
-				return;
+				if(!isPlayerBoard) game.showMessage("Cell Already Has Ship");
+				return false;
 			}
-			game.showMessage("Placing " + Battleship.SHIP_NAMES[currentShipType]);
-			cells[currentCoordinate].setBackground(Battleship.SHIP_COLOR);
+			if(!isPlayerBoard) game.showMessage("Placing " + Battleship.SHIP_NAMES[currentShipType]);
+			if(isPlayerBoard) cells[currentCoordinate].setBackground(Battleship.SHIP_COLOR);
 			shipPlacementInProgress = true;
 			startCoordinate = currentCoordinate;
-			return;
+			return true;
 		}
 
 		// If the square is clicked again before the second currentCoordinate,
@@ -151,155 +151,176 @@ public class Board extends JPanel
 			cells[currentCoordinate].defaultBackground();
 			shipPlacementInProgress = false;
 			cancelPlacement("Placement Cancelled");
-			return;
+			return false;
 		}
 
-		int shipOrientation = Battleship.NONE;
+		int shipOrientation = getShipOrientation();
+
+		if(!placeShip(startCoordinate, shipOrientation))
+		{
+			return false;
+		}
+
+		// If we made it here, all is well.
+		if(!isPlayerBoard) game.showMessage("Ship Placed!");
+		shipPlacementInProgress = false;
+		if (!(currentShipType < ships.length))
+		{
+			game.setupComplete();
+		}
+		return true;
+	}
+
+	protected boolean placeShip(int coordinate, int shipOrientation)
+	{
+		if(cells[coordinate].hasShip)
+		{
+			return false;
+		}
+		if(shipOrientation == Battleship.NORTH)
+		{
+			// Check North
+			if(((coordinate / 10) - (Battleship.SHIP_LENGTHS[currentShipType]-1)) < 0)
+			{
+				cancelPlacement("Out of Bounds");
+				return false;
+			}
+			// Are there any ships in the way?
+			for(int i = 1; i < Battleship.SHIP_LENGTHS[currentShipType]; i++)
+			{
+				int checkCoord = coordinate - (i * Battleship.BOARD_DIMENSION);
+				if(cells[checkCoord].hasShip)
+				{
+					cancelPlacement("Blocked by " + Battleship.SHIP_NAMES[cells[checkCoord].shipId]);
+					return false;
+				}
+			}
+			for(int i = 0; i < Battleship.SHIP_LENGTHS[currentShipType]; i++)
+			{
+				cells[coordinate - (i*10)].addShip(currentShipType);
+				if(isPlayerBoard) cells[coordinate - (i*10)].setBackground(Battleship.SHIP_COLOR);
+			}
+		}
+		else if (shipOrientation == Battleship.EAST)
+		{
+			// Is it too long for the space?
+			if(((coordinate % 10) + Battleship.SHIP_LENGTHS[currentShipType]) > Battleship.BOARD_DIMENSION)
+			{
+				cancelPlacement("Out of Bounds");
+				return false;
+			}
+			// Are there any ships in the way?
+			for(int i = 1; i < Battleship.SHIP_LENGTHS[currentShipType]; i++)
+			{
+				int checkCoord = coordinate + i;
+				if(cells[checkCoord].hasShip)
+				{
+					cancelPlacement("Blocked by " + Battleship.SHIP_NAMES[cells[checkCoord].shipId]);
+					return false;
+				}
+			}
+
+			for(int i = 0; i < Battleship.SHIP_LENGTHS[currentShipType]; i++)
+			{
+				cells[coordinate + i].addShip(currentShipType);
+				if(isPlayerBoard) cells[coordinate + i].setBackground(Battleship.SHIP_COLOR);
+			}
+		}
+		else if(shipOrientation == Battleship.SOUTH)
+		{
+			// Is it too long for the (now, vertical) space?
+			if(((coordinate / 10) + Battleship.SHIP_LENGTHS[currentShipType]) > Battleship.BOARD_DIMENSION)
+			{
+				cancelPlacement("Out of Bounds");
+				return false;
+			}
+			// Are there any ships in the way?
+			for(int i = 1; i < Battleship.SHIP_LENGTHS[currentShipType]; i++)
+			{
+				int checkCoord = coordinate + (i * Battleship.BOARD_DIMENSION);
+				if(cells[checkCoord].hasShip)
+				{
+					cancelPlacement("Blocked by " + Battleship.SHIP_NAMES[cells[checkCoord].shipId]);
+					return false;
+				}
+			}
+			for(int i = 0; i < Battleship.SHIP_LENGTHS[currentShipType]; i++)
+			{
+				cells[coordinate + (i*10)].addShip(currentShipType);
+				if(isPlayerBoard) cells[coordinate + (i*10)].setBackground(Battleship.SHIP_COLOR);
+			}
+		}
+		else if(shipOrientation == Battleship.WEST)
+		{
+			// Is it too long for the space?
+			if(((coordinate % 10) - (Battleship.SHIP_LENGTHS[currentShipType]-1)) < 0)
+			{
+				cancelPlacement("Out of Bounds");
+				return false;
+			}
+			// Are there any ships in the way?
+			for(int i = 1; i < Battleship.SHIP_LENGTHS[currentShipType]; i++)
+			{
+				int checkCoord = coordinate - i;
+				if(cells[checkCoord].hasShip)
+				{
+					cancelPlacement("Blocked by " + Battleship.SHIP_NAMES[cells[checkCoord].shipId]);
+					return false;
+				}
+			}
+
+			for(int i = 0; i < Battleship.SHIP_LENGTHS[currentShipType]; i++)
+			{
+				cells[coordinate - i].addShip(currentShipType);
+				if(isPlayerBoard) cells[coordinate - i].setBackground(Battleship.SHIP_COLOR);
+			}
+		}
+		else
+		{
+			cancelPlacement("Cells Not Aligned");
+			return false;
+		}
+
+		currentShipType++;
+
+		// Did we make it?
+		return true;
+	}
+
+	private int getShipOrientation()
+	{
 		if((currentCoordinate / Battleship.BOARD_DIMENSION) == (startCoordinate / Battleship.BOARD_DIMENSION))
 		{
 			if((currentCoordinate > startCoordinate))
 			{
-				shipOrientation = Battleship.EAST;
+				return Battleship.EAST;
 			}
 			else
 			{
-				shipOrientation = Battleship.WEST;
+				return Battleship.WEST;
 			}
 		}
 		else if((currentCoordinate % Battleship.BOARD_DIMENSION) == (startCoordinate % Battleship.BOARD_DIMENSION))
 		{
 			if((currentCoordinate > startCoordinate))
 			{
-				shipOrientation = Battleship.SOUTH;
+				return Battleship.SOUTH;
 			}
 			else
 			{
-				shipOrientation = Battleship.NORTH;
+				return Battleship.NORTH;
 			}
 		}
 		else
 		{
-			cancelPlacement("Cells Not Aligned");
-			return;
+			return Battleship.NONE;
 		}
-
-		if(shipOrientation == Battleship.NORTH)
-		{
-			// Check North
-			if(((startCoordinate / 10) - (Battleship.SHIP_LENGTHS[currentShipType]-1)) < 0)
-			{
-				cancelPlacement("Out of Bounds");
-				return;
-			}
-			// Are there any ships in the way?
-			for(int i = 1; i < Battleship.SHIP_LENGTHS[currentShipType]; i++)
-			{
-				int checkCoord = startCoordinate - (i * Battleship.BOARD_DIMENSION); // too long
-				if(cells[checkCoord].hasShip)
-				{
-					cancelPlacement("Blocked by " + Battleship.SHIP_NAMES[cells[checkCoord].shipId]);
-					return;
-				}
-			}
-			for(int i = 0; i < Battleship.SHIP_LENGTHS[currentShipType]; i++)
-			{
-				cells[startCoordinate - (i*10)].addShip(currentShipType);
-			}
-		}
-		else if (shipOrientation == Battleship.EAST)
-		{
-			// Is it too long for the space?
-			if(((startCoordinate % 10) + Battleship.SHIP_LENGTHS[currentShipType]) > Battleship.BOARD_DIMENSION)
-			{
-				cancelPlacement("Out of Bounds");
-				return;
-			}
-			// Are there any ships in the way?
-			for(int i = 1; i < Battleship.SHIP_LENGTHS[currentShipType]; i++)
-			{
-				int checkCoord = startCoordinate + i;
-				if(cells[checkCoord].hasShip)
-				{
-					cancelPlacement("Blocked by " + Battleship.SHIP_NAMES[cells[checkCoord].shipId]);
-					return;
-				}
-			}
-
-			for(int i = 0; i < Battleship.SHIP_LENGTHS[currentShipType]; i++)
-			{
-				cells[startCoordinate + i].addShip(currentShipType);
-			}
-		}
-		else if(shipOrientation == Battleship.SOUTH)
-		{
-			// Is it too long for the (now, vertical) space?
-			if(((startCoordinate / 10) + Battleship.SHIP_LENGTHS[currentShipType]) > Battleship.BOARD_DIMENSION)
-			{
-				cancelPlacement("Out of Bounds");
-				return;
-			}
-			// Are there any ships in the way?
-			for(int i = 1; i < Battleship.SHIP_LENGTHS[currentShipType]; i++)
-			{
-				int checkCoord = startCoordinate + (i * Battleship.BOARD_DIMENSION);
-				if(cells[checkCoord].hasShip)
-				{
-					cancelPlacement("Blocked by " + Battleship.SHIP_NAMES[cells[checkCoord].shipId]);
-					return;
-				}
-			}
-			for(int i = 0; i < Battleship.SHIP_LENGTHS[currentShipType]; i++)
-			{
-				cells[startCoordinate + (i*10)].addShip(currentShipType);
-			}
-		}
-		else if(shipOrientation == Battleship.WEST)
-		{
-			// Is it too long for the space?
-			if(((startCoordinate % 10) - (Battleship.SHIP_LENGTHS[currentShipType]-1)) < 0)
-			{
-				cancelPlacement("Out of Bounds");
-				return;
-			}
-			// Are there any ships in the way?
-			for(int i = 1; i < Battleship.SHIP_LENGTHS[currentShipType]; i++)
-			{
-				int checkCoord = startCoordinate - i;
-				if(cells[checkCoord].hasShip)
-				{
-					cancelPlacement("Blocked by " + Battleship.SHIP_NAMES[cells[checkCoord].shipId]);
-					return;
-				}
-			}
-
-			for(int i = 0; i < Battleship.SHIP_LENGTHS[currentShipType]; i++)
-			{
-				cells[startCoordinate - i].addShip(currentShipType);
-			}
-		}
-		else
-		{
-			// If this happens, something has gone horribly wrong.
-			Log.debug("Ship Has No Orientation?");
-			cancelPlacement("Error");
-			return;
-		}
-
-		// If we made it here, all is well.
-		game.showMessage("Ship Placed!");
-		shipPlacementInProgress = false;
-		Log.debug("currentShipType = " + currentShipType);
-		currentShipType++;
-		if (!(currentShipType < ships.length))
-		{
-			game.setupComplete();
-		}
-		return;
 	}
 
 	protected void cancelPlacement(String reason)
 	{
-		game.showMessage(reason);
+		Log.debug(startCoordinate + " " + currentCoordinate + " " + reason);
+		if(!isPlayerBoard) game.showMessage(reason);
 		cells[startCoordinate].defaultBackground();
 		cells[currentCoordinate].defaultBackground();
 		shipPlacementInProgress = false;
@@ -308,15 +329,19 @@ public class Board extends JPanel
 	// Checks to see if any ships are afloat.
 	protected boolean hasShips()
 	{
+		Log.debug("Do we have ships?");
 		for(Ship s : ships)
 		{
+			Log.debug(s.name + " has " + s.hits + " hits and isSunk is " + s.isSunk);
 			// If any aren't sunk
 			if(!s.isSunk)
 			{
 				// Hooray, we have ships
+				Log.debug("Yes.");
 				return true;
 			}
 		}
+		Log.debug("No.");
 		// Boo, no ships. We lose.
 		return false;
 	}
@@ -325,7 +350,7 @@ public class Board extends JPanel
 	{
 		if(firingCoordinate < 0)
 		{
-			game.showMessage("Must Select Coordinate");
+			if(!isPlayerBoard) game.showMessage("Must Select Coordinate");
 			return false;
 		}
 		boolean result = addHit();
@@ -339,7 +364,7 @@ public class Board extends JPanel
 	{
 		if(cells[firingCoordinate].state == Battleship.MISS_SYMBOL)
 		{
-			game.showMessage("You've already fired there.");
+			if(!isPlayerBoard) game.showMessage("You've already fired there.");
 			cells[firingCoordinate].setBackground(Battleship.MISS_COLOR);
 			cells[firingCoordinate].state = Battleship.MISS_SYMBOL;
 			return false;
@@ -359,12 +384,12 @@ public class Board extends JPanel
 				||	(cells[firingCoordinate].state == Battleship.SUNK_SYMBOL))
 			{
 				message += " ... again.";
-				game.showMessage(message);
+				if(!isPlayerBoard) game.showMessage(message);
 				return true;
 			}
 			else
 			{
-				game.showMessage(message);
+				if(!isPlayerBoard) game.showMessage(message);
 			}
 			
 			// If this hit sank the ship
@@ -374,11 +399,11 @@ public class Board extends JPanel
 				// You know the commercial-- ya gotta say it if ya can!
 				if(cells[firingCoordinate].shipId == 2)
 				{
-					game.showMessage("You sunk my Battleship!");
+					if(!isPlayerBoard) game.showMessage("You sunk my Battleship!");
 				}
 				else
 				{
-					game.showMessage(Battleship.SHIP_NAMES[cells[firingCoordinate].shipId] + " has sunk!");
+					if(!isPlayerBoard) game.showMessage(Battleship.SHIP_NAMES[cells[firingCoordinate].shipId] + " has sunk!");
 				}
 				
 				// Update the cell
@@ -394,6 +419,11 @@ public class Board extends JPanel
 						cells[i].state = Battleship.SUNK_SYMBOL;
 					}
 				}
+				if(!hasShips())
+				{
+					Log.debug("Game should be over.");
+					game.end();
+				}
 			}
 			else
 			{
@@ -408,10 +438,10 @@ public class Board extends JPanel
 		else
 		{
 			// *Sad trombones*
-			game.showMessage("That's a miss! :(");
+			if(!isPlayerBoard) game.showMessage("That's a miss! :(");
 			cells[firingCoordinate].setBackground(Battleship.MISS_COLOR);
 			cells[firingCoordinate].state = Battleship.MISS_SYMBOL;
 			return false;
-		}	
+			}	
 	}
 }

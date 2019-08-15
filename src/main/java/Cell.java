@@ -114,15 +114,16 @@ public class Cell extends JLabel
 
 	protected void sendShipPlacementRequest()
 	{
-		parentBoard.placeShip(this.coordinate);
+		parentBoard.addCoordinate(this.coordinate);
 	}
 	
 	// Adds a ship.
-	protected void addShip(int shipType)
+	protected Cell addShip(int shipType)
 	{	
-		setBackground(Battleship.SHIP_COLOR);
+		originalColor = this.getBackground();
 		this.shipId = shipType;	
 		hasShip = (shipId == 0) ? false : true;
+		return this;
 	}
 
 	protected void defaultBackground()

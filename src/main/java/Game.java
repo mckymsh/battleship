@@ -7,9 +7,10 @@ import javax.swing.border.*; // Why, Java
 
 public class Game extends JFrame
 {
-	JLabel displayPanel;
 	Board playerBoard;
+	ControlPanel controlPanel;
 	Board computerBoard;
+	AI computer;
 
 	Game ()
 	{
@@ -18,14 +19,17 @@ public class Game extends JFrame
 		setTitle(Battleship.WINDOW_TITLE);
 		setLayout(new BorderLayout());		
 		computerBoard = new Board(false, Battleship.COMPUTER_BOARD_NAME, this);
+		controlPanel = new ControlPanel();
 		playerBoard = new Board(true, Battleship.PLAYER_BOARD_NAME, this);
 		add(computerBoard, BorderLayout.PAGE_START);
-		add(buildControlPanel(), BorderLayout.CENTER);
+		add(controlPanel, BorderLayout.CENTER);
 		add(playerBoard, BorderLayout.PAGE_END);
 
 		pack();
 		setLocationRelativeTo(null);
 		setVisible(true);
+
+		computer = new AI(this);
 
 		run();
 	}
@@ -36,29 +40,54 @@ public class Game extends JFrame
 		newGame();
 	}
 
-	private void fire()
+	private void volley()
 	{
+		Log.debug("Volley");
+		if(computerBoard.firingCoordinate < 0) // Player fires
+		{
+			showMessage("No Coordinate Selected");
+			return;
+		}
 		computerBoard.fire();
+
+		if(!computerBoard.hasShips())
+		{
+			end();
+		}
+
+		playerBoard.setFiringCoordinate(computer.getFiringCoordinate(playerBoard));
+		computer.logResult(playerBoard.fire());
+
+		if(!playerBoard.hasShips())
+		{
+			end();
+		}
+	}
+
+	protected void end()
+	{
 		if(!computerBoard.hasShips())
 		{
 			showMessage("Player Wins!");
 		}
-		else if(!playerBoard.hasShips())
+		else
 		{
 			showMessage("Computer Wins!");
 		}
-		else
-		{
-			// More game
-		}
+		deactivate();
+
 	}
 
 	private void newGame()
 	{
 		Log.debug("Setup");
 		resetBoards();
+		computerBoard = computer.placeShips(computerBoard);
+		computerBoard.revalidate();
+		computerBoard.repaint();
+		// Start Computer setup
 		playerBoard.activate();
-		displayPanel.setText("Place Your Ships");
+		showMessage("Place Your Ships");
 	}
 
 	private void resetBoards()
@@ -67,53 +96,70 @@ public class Game extends JFrame
 		playerBoard.reset();
 	}
 
-	protected void setupComplete()
+	private void deactivate()
 	{
-		Log.debug("All Ships Placed");
+		controlPanel.deactivateFireButton();
+		computerBoard.deactivate();
 		playerBoard.deactivate();
-		computerBoard.activate();
 	}
 
-	private void beginTurn()
+	protected void setupComplete()
 	{
-		showMessage("Select Coordinates");
+		playerBoard.deactivate();
+		computerBoard.activate();
+		controlPanel.activateFireButton();
 	}
 
 	protected void showMessage(String message)
 	{
-		displayPanel.setText(message);
+		controlPanel.displayPanel.setText(message);
 	}
 
-	private JPanel buildControlPanel()
+	private class ControlPanel extends JPanel
 	{
-		JPanel controlPanel = new JPanel();
-		controlPanel.setSize(new Dimension(Battleship.BOARD_DIMENSION * 30, Battleship.BOARD_DIMENSION * 10));
-		controlPanel.setLayout(new BorderLayout());
-
-		JButton newGameButton = new JButton("New");
-		displayPanel = new JLabel("Welcome to Battleship", SwingConstants.CENTER);
-		// displayPanel.setBorder(new LineBorder(Color.BLACK));
-		JButton fireButton = new JButton("Fire");
-
-		newGameButton.addActionListener(new ActionListener()
+		JButton newGameButton;
+		JLabel displayPanel;
+		JButton fireButton;
+		ActionListener fireButtonListener;
+		ControlPanel()
 		{
-			public void actionPerformed(ActionEvent e)
+			setSize(new Dimension(Battleship.BOARD_DIMENSION * 30, Battleship.BOARD_DIMENSION * 10));
+			setLayout(new BorderLayout());
+
+			newGameButton = new JButton("New");
+			displayPanel = new JLabel("Welcome to Battleship", SwingConstants.CENTER);
+			fireButton = new JButton("Fire");
+
+			newGameButton.addActionListener(new ActionListener()
 			{
-				newGame();
-			}
-		});
-		fireButton.addActionListener(new ActionListener()
+				public void actionPerformed(ActionEvent e)
+				{
+					newGame();
+				}
+			});
+			fireButtonListener = new ActionListener()
+			{
+				public void actionPerformed(ActionEvent e)
+				{
+					Log.debug("Fire Clicked");
+					volley();
+				}
+			};
+
+			add(newGameButton, BorderLayout.LINE_START);
+			add(displayPanel, BorderLayout.CENTER);
+			add(fireButton, BorderLayout.LINE_END);
+		}
+
+		protected void deactivateFireButton()
 		{
-			public void actionPerformed(ActionEvent e)
-			{
-				fire();
-			}
-		});
+			fireButton.removeActionListener(fireButtonListener);
+		}
 
-		controlPanel.add(newGameButton, BorderLayout.LINE_START);
-		controlPanel.add(displayPanel, BorderLayout.CENTER);
-		controlPanel.add(fireButton, BorderLayout.LINE_END);
-
-		return controlPanel;
+		protected void activateFireButton()
+		{
+			Log.debug("Adding fireButtonListener");
+			fireButton.addActionListener(fireButtonListener);
+		}
 	}
 }

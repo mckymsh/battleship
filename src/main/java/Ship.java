@@ -25,6 +25,14 @@ public class Ship
 		hits = 0;
 		isSunk = false;
 		status = "✓";
+
+		if(shipType == 0)
+		{
+			Log.debug("Creating 'None' Ship");
+			hits = 1;
+			isSunk = true;
+			status = "✗";
+		}
 	}
 	
 	// Adds a hit to the ship
@@ -37,6 +45,11 @@ public class Ship
 		
 		isSunk = (hits < length) ? false : true;
 		status = (isSunk) ? "✗" : "✓";
+
+		if(isSunk)
+		{
+			Log.debug(name + " has sunk.");
+		}
 
 		return isSunk;
 	}

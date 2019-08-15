@@ -39,6 +39,8 @@ public class Battleship
 	protected static final int EAST 	= 2;
 	protected static final int SOUTH 	= 3;
 	protected static final int WEST 	= 4;
+	protected static final String[] ORIENTATIONS = 
+			{"None", "North", "East", "South", "West"}; // For debug display and whatnot
 	
 	public static void main(String[] args)
 	{
