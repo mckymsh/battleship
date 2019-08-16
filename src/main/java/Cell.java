@@ -120,7 +120,8 @@ public class Cell extends JLabel
 	// Adds a ship.
 	protected Cell addShip(int shipType)
 	{	
-		originalColor = this.getBackground();
+		deactivate();
+		// originalColor = this.getBackground();
 		this.shipId = shipType;	
 		hasShip = (shipId == 0) ? false : true;
 		return this;

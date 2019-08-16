@@ -36,6 +36,28 @@ public class Board extends JPanel
 		// reset();
 	}
 
+	// This constructor is only used by the AI for record-keeping.
+	Board(String name)
+	{
+		Log.debug("Second Board Constructor");
+		this.name = name;
+		
+		cells = new Cell[Battleship.BOARD_DIMENSION * Battleship.BOARD_DIMENSION];
+		ships = new Ship[Battleship.SHIP_NAMES.length];
+
+		for(int i = 0; i < cells.length; i++)
+		{
+			cells[i] = new Cell(i, this);
+			add(cells[i]);			
+		}
+		
+		// Remember that ship type 0 is no ship
+		for (int i = 0; i < ships.length; i++)
+		{
+			ships[i] = new Ship(i);
+		}
+	}
+
 	protected void reset()
 	{
 		shipPlacementInProgress = false;

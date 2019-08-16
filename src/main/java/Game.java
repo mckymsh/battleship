@@ -103,6 +103,7 @@ public class Game extends JFrame
 
 	protected void setupComplete()
 	{
+		showMessage("Fire Away!");
 		playerBoard.deactivate();
 		computerBoard.activate();
 	}
