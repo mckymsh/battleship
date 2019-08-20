@@ -38,7 +38,7 @@ public class Game extends JFrame
 	{
 		Log.debug("############################################################");
 		Log.debug("Setup");
-		resetBoards();
+		resetGame();
 		computerBoard = computer.placeShips(computerBoard);
 		computerBoard.revalidate();
 		computerBoard.repaint();
@@ -46,16 +46,11 @@ public class Game extends JFrame
 		showMessage("Place Your Ships");	
 	}
 
-	private void resetBoards()
+	private void resetGame()
 	{
+		computer.reset();
 		computerBoard.reset();
 		playerBoard.reset();
-	}
-
-	private void newGame()
-	{
-		resetBoards();
-		startGame();
 	}
 
 	protected void volley()
@@ -70,16 +65,20 @@ public class Game extends JFrame
 
 		if(!computerBoard.hasShips())
 		{
+			Log.debug("Player Wins!");
 			end();
 		}
+		Log.debug("Computer's board still has ships.");
 
 		playerBoard.setFiringCoordinate(computer.getFiringCoordinate());
 		computer.logResult(playerBoard.fire());
 
 		if(!playerBoard.hasShips())
 		{
+			Log.debug("Computer Wins!");
 			end();
 		}
+		Log.debug("Player's board still has ships.");
 	}
 
 	protected void end()
@@ -129,14 +128,14 @@ public class Game extends JFrame
 			setLayout(new BorderLayout());
 
 			newGameButton = new JButton("New");
-			displayPanel = new JLabel("Welcome to Battleship", SwingConstants.CENTER);
+			displayPanel = new JLabel(Battleship.BLANK_SYMBOL, SwingConstants.CENTER);
 			optionsButton = new JButton("Options");
 
 			newGameButton.addActionListener(new ActionListener()
 			{
 				public void actionPerformed(ActionEvent e)
 				{
-					newGame();
+					startGame();
 				}
 			});
 			optionsButton.addActionListener(new ActionListener()

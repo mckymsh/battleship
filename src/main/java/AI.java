@@ -7,7 +7,6 @@ import java.util.LinkedList;
 public class AI
 {
 	private int firingCoordinate;
-	private int lastCoordinate;
 	private Game game;
 	private Random random;
 	
@@ -17,9 +16,14 @@ public class AI
 
 	public AI(Game game)
 	{
+		Log.debug("Creating Computer Player");
 		game = game;
+		reset();
+	}
+
+	protected void reset()
+	{
 		firingCoordinate = -1;
-		lastCoordinate = firingCoordinate;
 		random = new Random();
 		resultsBoard = new Board("Computer Results Board");
 		history = new Stack<Integer>();
@@ -28,14 +32,15 @@ public class AI
 
 	// Returns a coordinate to the game,
 	// which it adds to the board for firing.
+	// This is where the magic happens.
 	protected int getFiringCoordinate()
 	{
+		Log.debug("Getting Firing coordinate from Computer");
 		// Easy peasy mode
 		// do
 		// {
 		// 	firingCoordinate = random.nextInt(100);
 		// }
-		// while(results[firingCoordinate] != 0);
 
 		if(candidateList.peekFirst() == null)
 		{
@@ -57,16 +62,10 @@ public class AI
 	// Logs the result of a volley as reported through the fire() method in Game.
 	protected void logResult(boolean success)
 	{
+		Log.debug("Computer is logging result of shot.");
 		// AKA if this is our first shot.
-		if(firingCoordinate < 0)
-		{
-			lastCoordinate = 0;
-		}
-		else
-		{
-			lastCoordinate = firingCoordinate;
-		}
-
+		int lastCoordinate = history.peek();
+		
 		if(success)
 		{
 			resultsBoard.cells[lastCoordinate].state = Battleship.HIT_SYMBOL;
@@ -78,49 +77,54 @@ public class AI
 		}
 	}
 
+	// Adds adjacent cells to the 'queue' (such as it is)
+	// Makes sure to skip repeats and out-of-bounds coordinates
 	private void addAllAdjacentCells(int coordinate)
 	{
-		int checkCoordinate = coordinate - Battleship.BOARD_DIMENSION;
+		Log.debug("Computer is adding adjacent cells.");
+		int tempCoordinate = -1;
+
+		// NOT Out of bounds NORTH
 		if(!((coordinate / 10) - 1 < 0))
 		{
-			// NOT Out of bounds NORTH
-			if(resultsBoard.cells[checkCoordinate].state == Battleship.BLANK_SYMBOL
-				&& history.search(new Integer(checkCoordinate)) < 0)
+			tempCoordinate = coordinate - Battleship.BOARD_DIMENSION;
+			if(resultsBoard.cells[tempCoordinate].state == Battleship.BLANK_SYMBOL
+				&& history.search(new Integer(tempCoordinate)) < 0)
 			{
-				candidateList.addLast(new Integer(checkCoordinate));
+				candidateList.addFirst(new Integer(tempCoordinate));
 			}
 		}
-
-		checkCoordinate = coordinate + 1;
+		
+		// NOT Out of bounds EAST
 		if(!((coordinate % 10) + 1 > Battleship.BOARD_DIMENSION - 1))
 		{
-			// NOT Out of bounds EAST
-			if(resultsBoard.cells[checkCoordinate].state == Battleship.BLANK_SYMBOL
-				&& history.search(new Integer(checkCoordinate)) < 0)
+			tempCoordinate = coordinate + 1;
+			if(resultsBoard.cells[tempCoordinate].state == Battleship.BLANK_SYMBOL
+				&& history.search(new Integer(tempCoordinate)) < 0)
 			{
-				candidateList.addLast(new Integer(checkCoordinate));
+				candidateList.addFirst(new Integer(tempCoordinate));
 			}
 		}
 
-		checkCoordinate = coordinate + Battleship.BOARD_DIMENSION;
+		// NOT Out of bounds SOUTH
 		if(!((coordinate / 10) + 1 > Battleship.BOARD_DIMENSION - 1))
 		{
-			// NOT Out of bounds SOUTH
-			if(resultsBoard.cells[checkCoordinate].state == Battleship.BLANK_SYMBOL
-				&& history.search(new Integer(checkCoordinate)) < 0)
+			tempCoordinate = coordinate + Battleship.BOARD_DIMENSION;
+			if(resultsBoard.cells[tempCoordinate].state == Battleship.BLANK_SYMBOL
+				&& history.search(new Integer(tempCoordinate)) < 0)
 			{
-				candidateList.addLast(new Integer(checkCoordinate));
+				candidateList.addFirst(new Integer(tempCoordinate));
 			}
 		}
 
-		checkCoordinate = coordinate - 1;
+		// NOT Out of bounds WEST
 		if(!((coordinate % Battleship.BOARD_DIMENSION) - 1 < 0))
 		{
-			// NOT Out of bounds WEST
-			if(resultsBoard.cells[checkCoordinate].state == Battleship.BLANK_SYMBOL
-				&& history.search(new Integer(checkCoordinate)) < 0)
+			tempCoordinate = coordinate - 1;
+			if(resultsBoard.cells[tempCoordinate].state == Battleship.BLANK_SYMBOL
+				&& history.search(new Integer(tempCoordinate)) < 0)
 			{
-				candidateList.addLast(new Integer(checkCoordinate));
+				candidateList.addFirst(new Integer(tempCoordinate));
 			}
 		}
 	}
@@ -142,7 +146,7 @@ public class AI
 			// Randomly tries ship locations until
 			// it finds something that works.
 			// This is a low-priority fix since
-			// it doesn't really affect anything.
+			// it doesn't affect play very much.
 			do
 			{
 				coordinate = random.nextInt(100);

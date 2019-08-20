@@ -92,7 +92,7 @@ public class Board extends JPanel
 		}
 		else
 		{
-			Log.debug("Should be activating computer board");
+			Log.debug("Activating computer board");
 			for(Cell cell : cells)
 			{
 				cell.activateSelectCoordinates();
@@ -329,7 +329,7 @@ public class Board extends JPanel
 	protected void cancelPlacement(String reason)
 	{
 		Log.debug(reason);
-		if(!isPlayerBoard) game.showMessage(reason);
+		if(isPlayerBoard) game.showMessage(reason);
 		cells[startCoordinate].defaultBackground();
 		cells[currentCoordinate].defaultBackground();
 		shipPlacementInProgress = false;
@@ -338,15 +338,15 @@ public class Board extends JPanel
 	// Checks to see if any ships are afloat.
 	protected boolean hasShips()
 	{
-		Log.debug("Do we have ships?");
+		Log.debug("Does " + name + " have ships?");
 		for(Ship s : ships)
 		{
-			Log.debug(s.name + " has " + s.hits + " hits and isSunk is " + s.isSunk);
+			// Log.debug(s.name + " has " + s.hits + " hits and isSunk is " + s.isSunk);
 			// If any aren't sunk
 			if(!s.isSunk)
 			{
 				// Hooray, we have ships
-				Log.debug("Yes.");
+				Log.debug("Well, it has a " + s.name + ", at least.");
 				return true;
 			}
 		}
@@ -406,21 +406,15 @@ public class Board extends JPanel
 			{
 				cells[firingCoordinate].setBackground(Battleship.SUNK_COLOR);
 				// You know the commercial-- ya gotta say it if ya can!
-				if(!isPlayerBoard) 
+				if(cells[firingCoordinate].shipId == 2)
 				{
-					if(cells[firingCoordinate].shipId == 2)
-					{
-						game.showMessage("You sunk my Battleship!");
-					}
-					else
-					{
-						game.showMessage(Battleship.SHIP_NAMES[cells[firingCoordinate].shipId] + " has sunk!");
-					}
+					if(!isPlayerBoard) game.showMessage("You sunk my Battleship!");
 				}
 				else
 				{
-					// Tell computer what sank
+					if(!isPlayerBoard) game.showMessage(Battleship.SHIP_NAMES[cells[firingCoordinate].shipId] + " has sunk!");
 				}
+				// Tell computer what sank here
 				
 				// Update the cell
 				cells[firingCoordinate].state = Battleship.SUNK_SYMBOL;
