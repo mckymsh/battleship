@@ -17,9 +17,9 @@ public class Ship
 	{
 		this.type = shipType;
 		
-		this.length = Battleship.SHIP_LENGTHS[type];
-		this.name = Battleship.SHIP_NAMES[type];
-		this.letter = Battleship.SHIP_LETTERS[type];
+		this.length = 		Battleship.SHIP_LENGTHS[type];
+		this.name = 		Battleship.SHIP_NAMES[type];
+		this.letter = 		Battleship.SHIP_LETTERS[type];
 		this.abbreviation = Battleship.SHIP_ABBREVIATIONS[type];
 		
 		hits = 0;
@@ -28,7 +28,7 @@ public class Ship
 
 		if(shipType == 0)
 		{
-			Log.debug("Creating 'None' Ship");
+			// Log.debug("Creating 'None' Ship");
 			hits = 1;
 			isSunk = true;
 			status = "✗";

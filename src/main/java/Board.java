@@ -39,7 +39,6 @@ public class Board extends JPanel
 	// This constructor is only used by the AI for record-keeping.
 	Board(String name)
 	{
-		Log.debug("Second Board Constructor");
 		this.name = name;
 		
 		cells = new Cell[Battleship.BOARD_DIMENSION * Battleship.BOARD_DIMENSION];
@@ -54,7 +53,7 @@ public class Board extends JPanel
 		// Remember that ship type 0 is no ship
 		for (int i = 0; i < ships.length; i++)
 		{
-			ships[i] = new Ship(i);
+			ships[i] = new Ship(0);
 		}
 	}
 
@@ -146,7 +145,7 @@ public class Board extends JPanel
 				if(!isPlayerBoard) game.showMessage("Cell Already Has Ship");
 				return false;
 			}
-			if(!isPlayerBoard) game.showMessage("Placing " + Battleship.SHIP_NAMES[currentShipType]);
+			if(isPlayerBoard) game.showMessage("Placing " + Battleship.SHIP_NAMES[currentShipType]);
 			if(isPlayerBoard) cells[currentCoordinate].setBackground(Battleship.SHIP_COLOR);
 			shipPlacementInProgress = true;
 			startCoordinate = currentCoordinate;
@@ -171,7 +170,7 @@ public class Board extends JPanel
 		}
 
 		// If we made it here, all is well.
-		if(!isPlayerBoard) game.showMessage("Ship Placed!");
+		if(isPlayerBoard) game.showMessage("Ship Placed!");
 		shipPlacementInProgress = false;
 		if (!(currentShipType < ships.length))
 		{
