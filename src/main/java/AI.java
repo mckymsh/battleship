@@ -8,6 +8,7 @@ public class AI
 {
 	private int firingCoordinate;
 	private Game game;
+	private Battleship.Level difficultySetting;
 	private Random random;
 	
 	private Board resultsBoard;
@@ -18,6 +19,7 @@ public class AI
 	{
 		Log.debug("Creating Computer Player");
 		game = game;
+		difficultySetting = Battleship.Level.NORMAL;
 		reset();
 	}
 
@@ -30,29 +32,54 @@ public class AI
 		candidateList = new LinkedList<Integer>();
 	}
 
+	protected void setLevel(Battleship.Level newLevel)
+	{
+		if(newLevel == Battleship.Level.HARD)
+		{
+			Log.debug("HARD Level not yet implemented.");
+			return;
+		}
+		difficultySetting = newLevel;
+	}
+
 	// Returns a coordinate to the game,
 	// which it adds to the board for firing.
 	// This is where the magic happens.
 	protected int getFiringCoordinate()
 	{
 		Log.debug("Getting Firing coordinate from Computer");
-		// Easy peasy mode
-		// do
-		// {
-		// 	firingCoordinate = random.nextInt(100);
-		// }
-
-		if(candidateList.peekFirst() == null)
+		switch(difficultySetting)
 		{
-			do
+			case EASY:
 			{
-				firingCoordinate = random.nextInt(100);
+				do
+				{
+					firingCoordinate = random.nextInt(100);
+				}
+				while(resultsBoard.cells[firingCoordinate].state != Battleship.BLANK_SYMBOL);
 			}
-			while(history.search(new Integer(firingCoordinate)) >= 0);
-		}
-		else
-		{
-			firingCoordinate = candidateList.pop().intValue();
+
+			case NORMAL:
+			{
+				if(candidateList.peekFirst() == null)
+				{
+					do
+					{
+						firingCoordinate = random.nextInt(100);
+					}
+					while(history.search(new Integer(firingCoordinate)) >= 0);
+				}
+				else
+				{
+					firingCoordinate = candidateList.pop().intValue();
+				}
+			}
+
+			case HARD:
+			{
+				Log.debug("Somehow we're on hard difficulty.\n"
+					+ "that shouldn't be possible.");
+			}
 		}
 
 		history.push(new Integer(firingCoordinate));
@@ -69,7 +96,10 @@ public class AI
 		if(success)
 		{
 			resultsBoard.cells[lastCoordinate].state = Battleship.HIT_SYMBOL;
-			addAllAdjacentCells(lastCoordinate);
+			if(difficultySetting != Battleship.Level.EASY)
+			{
+				addAllAdjacentCells(lastCoordinate);
+			}
 		}
 		else
 		{

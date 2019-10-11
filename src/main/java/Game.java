@@ -26,6 +26,7 @@ public class Game extends JFrame
 		add(playerBoard, BorderLayout.PAGE_END);
 
 		pack();
+		setResizable(false);
 		setLocationRelativeTo(null);
 		setVisible(true);
 
@@ -38,19 +39,14 @@ public class Game extends JFrame
 	{
 		Log.debug("############################################################");
 		Log.debug("Setup");
-		resetGame();
+		computer.reset();
+		computerBoard.reset();
+		playerBoard.reset();
 		computerBoard = computer.placeShips(computerBoard);
 		computerBoard.revalidate();
 		computerBoard.repaint();
 		playerBoard.activate();
 		showMessage("Place Your Ships");	
-	}
-
-	private void resetGame()
-	{
-		computer.reset();
-		computerBoard.reset();
-		playerBoard.reset();
 	}
 
 	protected void volley()
@@ -112,9 +108,39 @@ public class Game extends JFrame
 		controlPanel.displayPanel.setText(message);
 	}
 
-	private void displayOptions()
+	private void changeLevel()
 	{
-		Log.debug("Displaying Options");
+		Log.debug("Changing Level...");
+		// JOptionPane.showOptionDialog(this,"Hello, this is a dialogue box.");  
+
+		Object[] options = {
+			Battleship.Level.EASY,
+			Battleship.Level.NORMAL,
+			Battleship.Level.HARD
+		};
+		int result = JOptionPane.showOptionDialog(this, 
+			Battleship.LEVEL_MESSAGE,
+			Battleship.LEVEL_TITLE,
+			JOptionPane.YES_NO_CANCEL_OPTION,
+		    JOptionPane.PLAIN_MESSAGE,
+	        null, 
+	        options, 
+	        Battleship.Level.NORMAL);
+		if(result == 2)
+		{
+			Log.debug("HARD has not yet been implemented.");
+		}
+		else if(result >= 0)
+		{
+			Log.debug("Setting level to "
+				+ options[result].toString());
+			computer.setLevel((Battleship.Level) options[result]);
+			startGame();
+		}
+		else
+		{
+			Log.debug("Level change cancelled.");
+		}
 	}
 
 	private class ControlPanel extends JPanel
@@ -129,7 +155,7 @@ public class Game extends JFrame
 
 			newGameButton = new JButton("New");
 			displayPanel = new JLabel(Battleship.BLANK_SYMBOL, SwingConstants.CENTER);
-			optionsButton = new JButton("Options");
+			optionsButton = new JButton("Lvl");
 
 			newGameButton.addActionListener(new ActionListener()
 			{
@@ -142,7 +168,7 @@ public class Game extends JFrame
 			{
 				public void actionPerformed(ActionEvent e)
 				{
-					displayOptions();
+					changeLevel();
 				}
 			});
 

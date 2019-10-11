@@ -5,7 +5,7 @@ import java.awt.Color;
 public class Battleship
 {
 	// Lots n lots of constants used throughout the game.
-	// I like it this way in case I want to change something.
+	// Makes it easier to change little things without digging around for them.
 	
 	// Theoretically, you could change this without breaking things,
 	// but that's risky, since it was made by me.
@@ -14,6 +14,13 @@ public class Battleship
 	protected static final String WINDOW_TITLE = "Battleship by Mickey";
 	protected static final String COMPUTER_BOARD_NAME = "Computer Board";
 	protected static final String PLAYER_BOARD_NAME = "Player Board";
+
+	protected static final String LEVEL_MESSAGE = "Note: changing difficulty will reset the game.";
+	protected static final String LEVEL_TITLE = "Level Setting";
+	protected static enum Level
+	{
+		EASY, NORMAL, HARD,
+	}
 	
 	// Constants for the various types of ship. Alphabetical order.
 	//										Ship types:		0		1			2				3			4				5
@@ -31,7 +38,7 @@ public class Battleship
 	protected static final String HIT_SYMBOL			= "X";
 	protected static final Color HIT_COLOR				= Color.ORANGE;
 	protected static final String SUNK_SYMBOL			= "#";
-	protected static final Color SUNK_COLOR				= Color.RED1;
+	protected static final Color SUNK_COLOR				= Color.RED;
 
 	// Ship placement orientations for code readability
 	protected static final int NONE 	= 0;
