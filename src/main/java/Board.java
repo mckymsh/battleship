@@ -121,7 +121,7 @@ public class Board extends JPanel
 		}
 		firingCoordinate = currentCoordinate;
 
-		if(!cells[firingCoordinate].state.equals(Battleship.BLANK_SYMBOL))
+		if(cells[firingCoordinate].state != Battleship.State.BLANK)
 		{
 			if(!isPlayerBoard) game.showMessage("You've already fired there.");
 			firingCoordinate = -1;
@@ -369,36 +369,14 @@ public class Board extends JPanel
 
 	// Adds a hit to the cell and any ship that's on it.
 	protected boolean addHit()
-	{
-		if(cells[firingCoordinate].state == Battleship.MISS_SYMBOL)
-		{
-			if(!isPlayerBoard) game.showMessage("You've already fired there.");
-			cells[firingCoordinate].setBackground(Battleship.MISS_COLOR);
-			cells[firingCoordinate].state = Battleship.MISS_SYMBOL;
-			return false;
-		}
-			
+	{			
 		// If there's a ship there...
 		if(cells[firingCoordinate].hasShip)
 		{
 			cells[firingCoordinate].setBackground(Battleship.HIT_COLOR);
+
 			// Let 'em know
-			String message = "Hit!";
-			
-			// If we've already been hit here:
-			// * Don't add hits to the ship
-			// * Count it as a miss?
-			if(		(cells[firingCoordinate].state == Battleship.HIT_SYMBOL)
-				||	(cells[firingCoordinate].state == Battleship.SUNK_SYMBOL))
-			{
-				message += " ... again.";
-				if(!isPlayerBoard) game.showMessage(message);
-				return true;
-			}
-			else
-			{
-				if(!isPlayerBoard) game.showMessage(message);
-			}
+			if(!isPlayerBoard) game.showMessage("Hit!");
 			
 			// If this hit sank the ship
 			if(ships[cells[firingCoordinate].shipId].addHit())
@@ -416,7 +394,7 @@ public class Board extends JPanel
 				// Tell computer what sank here
 				
 				// Update the cell
-				cells[firingCoordinate].state = Battleship.SUNK_SYMBOL;
+				cells[firingCoordinate].state = Battleship.State.SUNK;
 				
 				// If it's sunk, make sure all of the cells match.
 				// No longer necessary in this version, but it does no harm.
@@ -425,9 +403,10 @@ public class Board extends JPanel
 					if(cells[i].shipId == cells[firingCoordinate].shipId)
 					{
 						cells[i].setBackground(Battleship.SUNK_COLOR);
-						cells[i].state = Battleship.SUNK_SYMBOL;
+						cells[i].state = Battleship.State.SUNK;
 					}
 				}
+				game.reportSinking(cells[firingCoordinate].shipId);
 				if(!hasShips())
 				{
 					Log.debug("Game should be over.");
@@ -438,7 +417,7 @@ public class Board extends JPanel
 			{
 				// If it's hit but not sunk.
 				cells[firingCoordinate].setBackground(Battleship.HIT_COLOR);
-				cells[firingCoordinate].state = Battleship.HIT_SYMBOL;
+				cells[firingCoordinate].state = Battleship.State.HIT;
 			}		
 			
 			// Finally, return a hit.
@@ -449,7 +428,7 @@ public class Board extends JPanel
 			// *Sad trombones*
 			if(!isPlayerBoard) game.showMessage("That's a miss! :(");
 			cells[firingCoordinate].setBackground(Battleship.MISS_COLOR);
-			cells[firingCoordinate].state = Battleship.MISS_SYMBOL;
+			cells[firingCoordinate].state = Battleship.State.MISS;
 			return false;
 		}	
 	}

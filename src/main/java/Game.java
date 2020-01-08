@@ -3,7 +3,7 @@ package battleship3;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
-import javax.swing.border.*; // Why, Java
+// import javax.swing.border.*; // Why, Java
 
 public class Game extends JFrame
 {
@@ -77,6 +77,12 @@ public class Game extends JFrame
 		Log.debug("Player's board still has ships.");
 	}
 
+	protected void reportSinking(int shipId)
+	{
+		Log.debug("Computer reports the sinking of its "
+			+ Battleship.SHIP_NAMES[shipId]);
+	}
+
 	protected void end()
 	{
 		if(!computerBoard.hasShips())
@@ -113,19 +119,20 @@ public class Game extends JFrame
 		Log.debug("Changing Level...");
 		// JOptionPane.showOptionDialog(this,"Hello, this is a dialogue box.");  
 
-		Object[] options = {
+		Object[] levels = {
 			Battleship.Level.EASY,
 			Battleship.Level.NORMAL,
 			Battleship.Level.HARD
 		};
 		int result = JOptionPane.showOptionDialog(this, 
-			Battleship.LEVEL_MESSAGE,
+			Battleship.LEVEL_MESSAGE + computer.getLevel().toString(),
 			Battleship.LEVEL_TITLE,
 			JOptionPane.YES_NO_CANCEL_OPTION,
 		    JOptionPane.PLAIN_MESSAGE,
 	        null, 
-	        options, 
-	        Battleship.Level.NORMAL);
+	        levels, 
+	        computer.getLevel()
+	        );
 		if(result == 2)
 		{
 			Log.debug("HARD has not yet been implemented.");
@@ -133,8 +140,8 @@ public class Game extends JFrame
 		else if(result >= 0)
 		{
 			Log.debug("Setting level to "
-				+ options[result].toString());
-			computer.setLevel((Battleship.Level) options[result]);
+				+ levels[result].toString());
+			computer.setLevel((Battleship.Level) levels[result]);
 			startGame();
 		}
 		else
@@ -147,7 +154,7 @@ public class Game extends JFrame
 	{
 		JButton newGameButton;
 		JLabel displayPanel;
-		JButton optionsButton;
+		JButton levelsButton;
 		ControlPanel()
 		{
 			setSize(new Dimension(Battleship.BOARD_DIMENSION * 30, Battleship.BOARD_DIMENSION * 10));
@@ -155,7 +162,7 @@ public class Game extends JFrame
 
 			newGameButton = new JButton("New");
 			displayPanel = new JLabel(Battleship.BLANK_SYMBOL, SwingConstants.CENTER);
-			optionsButton = new JButton("Lvl");
+			levelsButton = new JButton("Lvl");
 
 			newGameButton.addActionListener(new ActionListener()
 			{
@@ -164,7 +171,7 @@ public class Game extends JFrame
 					startGame();
 				}
 			});
-			optionsButton.addActionListener(new ActionListener()
+			levelsButton.addActionListener(new ActionListener()
 			{
 				public void actionPerformed(ActionEvent e)
 				{
@@ -174,7 +181,7 @@ public class Game extends JFrame
 
 			add(newGameButton, BorderLayout.LINE_START);
 			add(displayPanel, BorderLayout.CENTER);
-			add(optionsButton, BorderLayout.LINE_END);
+			add(levelsButton, BorderLayout.LINE_END);
 		}
 	}
 }

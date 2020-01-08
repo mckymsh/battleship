@@ -15,7 +15,8 @@ public class Battleship
 	protected static final String COMPUTER_BOARD_NAME = "Computer Board";
 	protected static final String PLAYER_BOARD_NAME = "Player Board";
 
-	protected static final String LEVEL_MESSAGE = "Note: changing difficulty will reset the game.";
+	protected static final String LEVEL_MESSAGE = "Note: changing difficulty will reset the game."
+													+"\nCurrent level: ";
 	protected static final String LEVEL_TITLE = "Level Setting";
 	protected static enum Level
 	{
@@ -30,7 +31,15 @@ public class Battleship
 	protected static final int[] 	SHIP_LENGTHS 		= {	0,		5, 			4, 				3, 			2, 				3			};
 	protected static final Color 	SHIP_COLOR			= Color.DARK_GRAY;
 	
-	// Symbols that show in the console.
+	protected static enum State
+	{
+		BLANK,
+		MISS,
+		HIT,
+		SUNK,
+	}
+
+	// Leftovers from when this was a (terrible) console game
 	protected static final String BLANK_SYMBOL			= "";
 	protected static final Color TARGET_COLOR			= Color.YELLOW;
 	protected static final String MISS_SYMBOL			= "O";
@@ -40,7 +49,14 @@ public class Battleship
 	protected static final String SUNK_SYMBOL			= "#";
 	protected static final Color SUNK_COLOR				= Color.RED;
 
-	// Ship placement orientations for code readability
+	// Ship placement orientations for code readability?
+	protected static enum Orientation
+	{
+			NORTH,
+				EAST,
+			SOUTH,
+		WEST,
+	}
 	protected static final int NONE 	= 0;
 	protected static final int NORTH 	= 1;
 	protected static final int EAST 	= 2;

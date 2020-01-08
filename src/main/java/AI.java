@@ -8,7 +8,7 @@ public class AI
 {
 	private int firingCoordinate;
 	private Game game;
-	private Battleship.Level difficultySetting;
+	private Battleship.Level difficultyLevel;
 	private Random random;
 	
 	private Board resultsBoard;
@@ -19,7 +19,7 @@ public class AI
 	{
 		Log.debug("Creating Computer Player");
 		game = game;
-		difficultySetting = Battleship.Level.NORMAL;
+		difficultyLevel = Battleship.Level.NORMAL;
 		reset();
 	}
 
@@ -39,7 +39,12 @@ public class AI
 			Log.debug("HARD Level not yet implemented.");
 			return;
 		}
-		difficultySetting = newLevel;
+		difficultyLevel = newLevel;
+	}
+
+	protected Battleship.Level getLevel()
+	{
+		return this.difficultyLevel;
 	}
 
 	// Returns a coordinate to the game,
@@ -48,19 +53,23 @@ public class AI
 	protected int getFiringCoordinate()
 	{
 		Log.debug("Getting Firing coordinate from Computer");
-		switch(difficultySetting)
+		Log.debug("Current Level: " + difficultyLevel.toString());
+		switch(difficultyLevel)
 		{
 			case EASY:
 			{
+				Log.debug("Doing the EASY thing");
 				do
 				{
 					firingCoordinate = random.nextInt(100);
 				}
-				while(resultsBoard.cells[firingCoordinate].state != Battleship.BLANK_SYMBOL);
+				while(resultsBoard.cells[firingCoordinate].state != Battleship.State.BLANK);
+				break;
 			}
 
 			case NORMAL:
 			{
+				Log.debug("Doing the NORMAL thing");
 				if(candidateList.peekFirst() == null)
 				{
 					do
@@ -73,12 +82,19 @@ public class AI
 				{
 					firingCoordinate = candidateList.pop().intValue();
 				}
+				break;
 			}
 
 			case HARD:
 			{
-				Log.debug("Somehow we're on hard difficulty.\n"
+				Log.debug("Somehow we're on hard.\n"
 					+ "that shouldn't be possible.");
+				break;
+			}
+
+			default:
+			{
+				Log.debug("Somehow the level isn't set? That's not good.");
 			}
 		}
 
@@ -95,15 +111,15 @@ public class AI
 		
 		if(success)
 		{
-			resultsBoard.cells[lastCoordinate].state = Battleship.HIT_SYMBOL;
-			if(difficultySetting != Battleship.Level.EASY)
+			resultsBoard.cells[lastCoordinate].state = Battleship.State.HIT;
+			if(difficultyLevel != Battleship.Level.EASY)
 			{
 				addAllAdjacentCells(lastCoordinate);
 			}
 		}
 		else
 		{
-			resultsBoard.cells[lastCoordinate].state = Battleship.MISS_SYMBOL;
+			resultsBoard.cells[lastCoordinate].state = Battleship.State.MISS;
 		}
 	}
 
@@ -118,7 +134,7 @@ public class AI
 		if(!((coordinate / 10) - 1 < 0))
 		{
 			tempCoordinate = coordinate - Battleship.BOARD_DIMENSION;
-			if(resultsBoard.cells[tempCoordinate].state == Battleship.BLANK_SYMBOL
+			if(resultsBoard.cells[tempCoordinate].state == Battleship.State.BLANK
 				&& history.search(new Integer(tempCoordinate)) < 0)
 			{
 				candidateList.addFirst(new Integer(tempCoordinate));
@@ -129,7 +145,7 @@ public class AI
 		if(!((coordinate % 10) + 1 > Battleship.BOARD_DIMENSION - 1))
 		{
 			tempCoordinate = coordinate + 1;
-			if(resultsBoard.cells[tempCoordinate].state == Battleship.BLANK_SYMBOL
+			if(resultsBoard.cells[tempCoordinate].state == Battleship.State.BLANK
 				&& history.search(new Integer(tempCoordinate)) < 0)
 			{
 				candidateList.addFirst(new Integer(tempCoordinate));
@@ -140,7 +156,7 @@ public class AI
 		if(!((coordinate / 10) + 1 > Battleship.BOARD_DIMENSION - 1))
 		{
 			tempCoordinate = coordinate + Battleship.BOARD_DIMENSION;
-			if(resultsBoard.cells[tempCoordinate].state == Battleship.BLANK_SYMBOL
+			if(resultsBoard.cells[tempCoordinate].state == Battleship.State.BLANK
 				&& history.search(new Integer(tempCoordinate)) < 0)
 			{
 				candidateList.addFirst(new Integer(tempCoordinate));
@@ -151,7 +167,7 @@ public class AI
 		if(!((coordinate % Battleship.BOARD_DIMENSION) - 1 < 0))
 		{
 			tempCoordinate = coordinate - 1;
-			if(resultsBoard.cells[tempCoordinate].state == Battleship.BLANK_SYMBOL
+			if(resultsBoard.cells[tempCoordinate].state == Battleship.State.BLANK
 				&& history.search(new Integer(tempCoordinate)) < 0)
 			{
 				candidateList.addFirst(new Integer(tempCoordinate));
