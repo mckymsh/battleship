@@ -1,4 +1,4 @@
-package battleship3;
+package battleship;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -10,7 +10,7 @@ public class Cell extends JLabel
 	protected boolean hasShip;
 	protected int shipId;
 	protected int coordinate;
-	protected Battleship.State state;
+	protected battleship.Constants.State state;
 	protected Board parentBoard;
 	private MouseListener mouseListener;
 	private Color originalColor;
@@ -26,7 +26,7 @@ public class Cell extends JLabel
 		setVerticalAlignment(SwingConstants.CENTER);		
 		setOpaque(true);
 
-		state = Battleship.State.BLANK;
+		state = battleship.Constants.State.BLANK;
 		this.coordinate = coordinate;
 		if ((coordinate / 10) % 2 == 0) // Even row
 		{

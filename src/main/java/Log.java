@@ -1,4 +1,4 @@
-package battleship3;
+package battleship;
 
 public final class Log
 {

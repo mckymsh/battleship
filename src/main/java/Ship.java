@@ -1,4 +1,4 @@
-package battleship3;
+package battleship;
 
 public class Ship
 {
@@ -17,10 +17,10 @@ public class Ship
 	{
 		this.type = shipType;
 		
-		this.length = 		Battleship.SHIP_LENGTHS[type];
-		this.name = 		Battleship.SHIP_NAMES[type];
-		this.letter = 		Battleship.SHIP_LETTERS[type];
-		this.abbreviation = Battleship.SHIP_ABBREVIATIONS[type];
+		this.length 		= battleship.Constants.SHIP_LENGTHS[type];
+		this.name 			= battleship.Constants.SHIP_NAMES[type];
+		this.letter 		= battleship.Constants.SHIP_LETTERS[type];
+		this.abbreviation 	= battleship.Constants.SHIP_ABBREVIATIONS[type];
 		
 		hits = 0;
 		isSunk = false;
@@ -29,9 +29,9 @@ public class Ship
 		if(shipType == 0)
 		{
 			// Log.debug("Creating 'None' Ship");
-			hits = 1;
-			isSunk = true;
-			status = "✗";
+			hits 	= 1;
+			isSunk 	= true;
+			status 	= "✗";
 		}
 	}
 	

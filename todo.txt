@@ -1,4 +1,0 @@
-* Have players report sinkings
-* Make AI determine if it has any (unsunk) hits in a row
-	* Maybe have a "row" state? Or just bump probabilitiy and re-sort queue
-* Make AI give up on a run/row when player "reports" a sinking

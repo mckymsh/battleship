@@ -1,4 +1,4 @@
-package battleship3;
+package battleship;
 
 import java.util.Random;
 import java.util.Stack;
@@ -7,42 +7,29 @@ import java.util.LinkedList;
 public class AI
 {
 	private int firingCoordinate;
-	private Game game;
-	private Battleship.Level difficultyLevel;
+	private Controller game;
+	private battleship.Constants.Level difficultyLevel;
 	private Random random;
 	
 	private Board resultsBoard;
 	private Stack<Integer> history;
 	private LinkedList<Integer> candidateList;
 
-	public AI(Game game)
+	public AI()
 	{
 		Log.debug("Creating Computer Player");
-		game = game;
-		difficultyLevel = Battleship.Level.NORMAL;
-		reset();
 	}
 
 	protected void reset()
 	{
-		firingCoordinate = -1;
-		random = new Random();
-		resultsBoard = new Board("Computer Results Board");
-		history = new Stack<Integer>();
-		candidateList = new LinkedList<Integer>();
 	}
 
-	protected void setLevel(Battleship.Level newLevel)
+	protected void setLevel(battleship.Constants.Level newLevel)
 	{
-		if(newLevel == Battleship.Level.HARD)
-		{
-			Log.debug("HARD Level not yet implemented.");
-			return;
-		}
 		difficultyLevel = newLevel;
 	}
 
-	protected Battleship.Level getLevel()
+	protected battleship.Constants.Level getLevel()
 	{
 		return this.difficultyLevel;
 	}
@@ -63,7 +50,7 @@ public class AI
 				{
 					firingCoordinate = random.nextInt(100);
 				}
-				while(resultsBoard.cells[firingCoordinate].state != Battleship.State.BLANK);
+				while(resultsBoard.cells[firingCoordinate].state != battleship.Constants.State.BLANK);
 				break;
 			}
 
@@ -97,30 +84,7 @@ public class AI
 				Log.debug("Somehow the level isn't set? That's not good.");
 			}
 		}
-
-		history.push(new Integer(firingCoordinate));
 		return firingCoordinate;
-	}
-
-	// Logs the result of a volley as reported through the fire() method in Game.
-	protected void logResult(boolean success)
-	{
-		Log.debug("Computer is logging result of shot.");
-		// AKA if this is our first shot.
-		int lastCoordinate = history.peek();
-		
-		if(success)
-		{
-			resultsBoard.cells[lastCoordinate].state = Battleship.State.HIT;
-			if(difficultyLevel != Battleship.Level.EASY)
-			{
-				addAllAdjacentCells(lastCoordinate);
-			}
-		}
-		else
-		{
-			resultsBoard.cells[lastCoordinate].state = Battleship.State.MISS;
-		}
 	}
 
 	// Adds adjacent cells to the 'queue' (such as it is)
@@ -133,8 +97,8 @@ public class AI
 		// NOT Out of bounds NORTH
 		if(!((coordinate / 10) - 1 < 0))
 		{
-			tempCoordinate = coordinate - Battleship.BOARD_DIMENSION;
-			if(resultsBoard.cells[tempCoordinate].state == Battleship.State.BLANK
+			tempCoordinate = coordinate - battleship.Constants.BOARD_DIMENSION;
+			if(resultsBoard.cells[tempCoordinate].state == battleship.Constants.State.BLANK
 				&& history.search(new Integer(tempCoordinate)) < 0)
 			{
 				candidateList.addFirst(new Integer(tempCoordinate));
@@ -142,10 +106,10 @@ public class AI
 		}
 		
 		// NOT Out of bounds EAST
-		if(!((coordinate % 10) + 1 > Battleship.BOARD_DIMENSION - 1))
+		if(!((coordinate % 10) + 1 > battleship.Constants.BOARD_DIMENSION - 1))
 		{
 			tempCoordinate = coordinate + 1;
-			if(resultsBoard.cells[tempCoordinate].state == Battleship.State.BLANK
+			if(resultsBoard.cells[tempCoordinate].state == battleship.Constants.State.BLANK
 				&& history.search(new Integer(tempCoordinate)) < 0)
 			{
 				candidateList.addFirst(new Integer(tempCoordinate));
@@ -153,10 +117,10 @@ public class AI
 		}
 
 		// NOT Out of bounds SOUTH
-		if(!((coordinate / 10) + 1 > Battleship.BOARD_DIMENSION - 1))
+		if(!((coordinate / 10) + 1 > battleship.Constants.BOARD_DIMENSION - 1))
 		{
-			tempCoordinate = coordinate + Battleship.BOARD_DIMENSION;
-			if(resultsBoard.cells[tempCoordinate].state == Battleship.State.BLANK
+			tempCoordinate = coordinate + battleship.Constants.BOARD_DIMENSION;
+			if(resultsBoard.cells[tempCoordinate].state == battleship.Constants.State.BLANK
 				&& history.search(new Integer(tempCoordinate)) < 0)
 			{
 				candidateList.addFirst(new Integer(tempCoordinate));
@@ -164,10 +128,10 @@ public class AI
 		}
 
 		// NOT Out of bounds WEST
-		if(!((coordinate % Battleship.BOARD_DIMENSION) - 1 < 0))
+		if(!((coordinate % battleship.Constants.BOARD_DIMENSION) - 1 < 0))
 		{
 			tempCoordinate = coordinate - 1;
-			if(resultsBoard.cells[tempCoordinate].state == Battleship.State.BLANK
+			if(resultsBoard.cells[tempCoordinate].state == battleship.Constants.State.BLANK
 				&& history.search(new Integer(tempCoordinate)) < 0)
 			{
 				candidateList.addFirst(new Integer(tempCoordinate));
@@ -182,7 +146,7 @@ public class AI
 	protected Board placeShips(Board board)
 	{
 		int coordinate = -1;
-		int orientation = Battleship.NONE;
+		int orientation = battleship.Constants.NONE;
 		boolean success = false;
 
 		// For all ships
@@ -198,7 +162,7 @@ public class AI
 				coordinate = random.nextInt(100);
 				orientation = random.nextInt(4) + 1; // i.e. 1-4, not zero
 				Log.debug("Attempting ShipType " + i + " at " 
-					+ coordinate + " pointing " + Battleship.ORIENTATIONS[orientation]);
+					+ coordinate + " pointing " + battleship.Constants.ORIENTATIONS[orientation]);
 			}
 			while(!board.placeShip(coordinate, orientation));
 			Log.debug("Ship " + i + " placed successfully.");

@@ -1,9 +1,9 @@
 <project>
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.mnash.fun</groupId>
-	<artifactId>battleship3</artifactId>
-	<version>3</version>
-	<name>Battleship3</name>
+	<artifactId>battleship</artifactId>
+	<version>4</version>
+	<name>Battleship</name>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.source>8</maven.compiler.source>
@@ -22,7 +22,7 @@
 						<index>true</index>
 						<manifest>
 							<addClasspath>true</addClasspath>
-							<mainClass>battleship3.Battleship</mainClass>
+							<mainClass>battleship.Battleship</mainClass>
 						</manifest>
 					</archive>
 				</configuration>
