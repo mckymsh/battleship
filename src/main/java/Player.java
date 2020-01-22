@@ -1,7 +1,21 @@
 package battleship;
 
-interface Player
+abstract class Player
 {
-	int getFiringCoordinate();
-	boolean fireAt(int coordinate);
+	int firingCoordinate;
+
+	Player()
+	{
+		firingCoordinate = -1;
+	}
+
+	protected int getFiringCoordinate()
+	{
+		return this.firingCoordinate;
+	}
+
+	protected boolean fireAt(int coordinate)
+	{
+		return true;
+	}
 }

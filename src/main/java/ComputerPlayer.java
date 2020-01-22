@@ -1,21 +1,11 @@
 package battleship;
 
-class ComputerPlayer implements Player
+class ComputerPlayer extends Player
 {
-	int firingCoordinate;
+	private AI ai;
 
 	ComputerPlayer()
 	{
-		firingCoordinate = -1;
-	}
-
-	int getFiringCoordinate()
-	{
-		return this.firingCoordinate;
-	}
-
-	boolean fireAt(int coordinate)
-	{
-		return true;
+		ai = new AI();
 	}
 }
